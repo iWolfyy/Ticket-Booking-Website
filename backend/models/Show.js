@@ -1,0 +1,21 @@
+const ShowSchema = new mongoose.Schema({
+  event: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
+  venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true },
+  startTime: { type: Date, required: true },
+  endTime: { type: Date },
+  
+  // Real-time Availability
+  // For Cinema/Theatre: Array of specific seats
+  // For Sports/Concerts: Map of remaining capacity per section
+  availability: [{
+    sectionName: String,
+    totalSeats: Number,
+    availableSeats: Number,
+    price: Number,
+    bookedSeats: [String] // e.g., ["A1", "A2"]
+  }],
+  
+  status: { type: String, enum: ['scheduled', 'cancelled', 'sold-out'], default: 'scheduled' }
+});
+
+module.exports = mongoose.model('Show', ShowSchema);

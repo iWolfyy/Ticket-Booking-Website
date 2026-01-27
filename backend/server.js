@@ -1,0 +1,35 @@
+const express = require('express');
+const dotenv = require('dotenv');
+const cors = require('cors');
+const connectDB = require('./config/db');
+
+// Load ENV Vars
+dotenv.config();
+
+// Connect to Database
+connectDB();
+
+const app = express();
+
+// Middleware
+app.use(cors());
+app.use(express.json()); //Allows the server to accept JSON data in the body
+
+// Routes
+
+// Auth Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+// Venue Routes
+app.use('/api/venues', require('./routes/venueRoutes'));
+
+//Basic Test Route
+app.get('/', (req, res) => {
+    res.send('API is running...');
+});
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+});
+
