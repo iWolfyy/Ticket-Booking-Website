@@ -6,7 +6,7 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 router.route('/')
 
 // Public route to get all venues
-    .get(getAllVenues);
+    .get(getAllVenues);     
 
 router.route('/')
 

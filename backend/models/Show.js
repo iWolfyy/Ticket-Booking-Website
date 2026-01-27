@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 const ShowSchema = new mongoose.Schema({
   event: { type: mongoose.Schema.Types.ObjectId, ref: 'Event', required: true },
   venue: { type: mongoose.Schema.Types.ObjectId, ref: 'Venue', required: true },
