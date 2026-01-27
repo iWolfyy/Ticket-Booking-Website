@@ -47,3 +47,37 @@ exports.getAllVenues = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+// @desc    Update venue
+// @route   PUT /api/venues/:id
+exports.updateVenue = async (req, res) => {
+    try {
+        const venue = await Venue.findByIdAndUpdate(req.params.id, req.body, { 
+            new: true,
+            runValidators: true
+        });
+        if (!venue) {
+            return res.status(404).json({ message: 'Venue not found' });
+        }
+        res.json(venue);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Delete venue
+// @route   DELETE /api/venues/:id
+exports.deleteVenue = async (req, res) => {
+    try {
+        const venue = await Venue.findByIdAndDelete(req.params.id);
+        if (!venue) {
+            return res.status(404).json({ message: 'Venue not found' });
+        }
+
+        await venue.deleteOne();
+        res.json({ message: 'Venue removed successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

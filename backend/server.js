@@ -23,6 +23,8 @@ app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/venues', require('./routes/venueRoutes'));
 // Event Routes
 app.use('/api/events', require('./routes/eventRoutes'));
+// Show Routes
+app.use('/api/shows', require('./routes/showRoutes'));
 
 //Basic Test Route
 app.get('/', (req, res) => {

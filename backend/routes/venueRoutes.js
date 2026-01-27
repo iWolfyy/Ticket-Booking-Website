@@ -1,16 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { createVenue, getAllVenues } = require('../controllers/venueController');
+const { createVenue, getAllVenues, updateVenue, deleteVenue} = require('../controllers/venueController');
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 router.route('/')
+    .get(getAllVenues)
+    .post(protect, authorize('seller', 'admin'), createVenue);
 
-// Public route to get all venues
-    .get(getAllVenues);     
-
-router.route('/')
-
-// Private route to create a new venue (Seller/Admin only)
-    .post(protect, authorize('seller', 'admin') , createVenue);
+router.route('/:id')
+    .put(protect, authorize('seller', 'admin'), updateVenue)
+    .delete(protect, authorize('seller', 'admin'), deleteVenue);
 
 module.exports = router;
