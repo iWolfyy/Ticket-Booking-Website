@@ -1,6 +1,6 @@
 const Venue = require('../models/Venue');
 
-// @desc Creae a new venue
+// @desc Create a new venue
 // @Route POST /api/venues
 // @access Private (Seller/Admin)
 

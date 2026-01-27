@@ -19,12 +19,16 @@ app.use(express.json()); //Allows the server to accept JSON data in the body
 
 // Auth Routes
 app.use('/api/auth', require('./routes/authRoutes'));
+// User Routes
+app.use('/api/users', require('./routes/userRoutes'));
 // Venue Routes
 app.use('/api/venues', require('./routes/venueRoutes'));
 // Event Routes
 app.use('/api/events', require('./routes/eventRoutes'));
 // Show Routes
 app.use('/api/shows', require('./routes/showRoutes'));
+// Booking Routes
+app.use('/api/bookings', require('./routes/bookingRoutes'));
 
 //Basic Test Route
 app.get('/', (req, res) => {
