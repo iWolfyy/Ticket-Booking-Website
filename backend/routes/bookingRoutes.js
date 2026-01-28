@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { createBooking, getUserBookings, cancelBooking } = require('../controllers/bookingController');
+const { createBooking, getUserBookings, cancelBooking, verifyTicket } = require('../controllers/bookingController');
 const { protect } = require('../middleware/authMiddleware');
 
 // Create a new booking
@@ -11,6 +11,9 @@ router.get('/mybookings', protect, getUserBookings);
 
 // Delete a Booking 
 router.delete('/:id', protect, cancelBooking);
+
+// Ticket Verification route
+router.patch('/verify/:id', protect, verifyTicket);
 
 
 

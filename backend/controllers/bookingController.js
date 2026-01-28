@@ -115,3 +115,41 @@ exports.cancelBooking = async (req, res) => {
 };
 
 
+// @desc    Verify QR Code and check-in user
+// @route   PATCH /api/bookings/verify/:id
+exports.verifyTicket = async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id)
+            .populate('user', 'name')
+            .populate('event', 'title');
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: "Ticket not found" });
+        }
+
+        if (booking.status !== 'confirmed') {
+            return res.status(400).json({ success: false, message: "Payment not confirmed" });
+        }
+
+        if (booking.isUsed) {
+            return res.status(400).json({ 
+                success: false, 
+                message: `Ticket already scanned at ${booking.usedAt}` 
+            });
+        }
+
+        // Mark as scanned
+        booking.isUsed = true;
+        booking.usedAt = new Date();
+        await booking.save();
+
+        res.json({
+            success: true,
+            message: `Welcome, ${booking.user.name}!`,
+            event: booking.event.title
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
