@@ -12,4 +12,6 @@ router.get('/mybookings', protect, getUserBookings);
 // Delete a Booking 
 router.delete('/:id', protect, cancelBooking);
 
+
+
 module.exports = router;

@@ -147,3 +147,37 @@ exports.deleteEvent = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+// @desc Search events by title, artist or album
+// @route GET /api/events/search?q=query
+
+exports.searchEvents = async (req, res) => {
+    try {
+        const { q } = req.query; //Get The Search term from the URL
+        if (!q) return res.status(400).json({ message: 'Search Query is Required' });
+
+        const searchRegex = new RegExp(q, 'i'); //'i' makes it case-insensitive
+
+        const results = await Event.find({
+            $or: [
+                { title: searchRegex },
+                { description: searchRegex },
+                { category: searchRegex },
+                { 'metadata.artists': searchRegex },
+                { 'metadata.director': searchRegex },
+                { "metadata.cast": searchRegex},
+                { "metadata.discography.title": searchRegex } // Searches inside the album list!
+            ]
+
+        }).populate('seller', 'name');
+
+        res.json({
+            count: results.length,
+            results
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

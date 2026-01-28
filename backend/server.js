@@ -11,11 +11,20 @@ connectDB();
 
 const app = express();
 
-// Middleware
+// Middleware 
+// 1. CORS first
 app.use(cors());
+
+// Webhook Routes
+app.use('/api/webhook', express.raw({ type: 'application/json' }), require('./routes/webhookRoutes'));
+
+// 3. Normal JSON parser for everything else
 app.use(express.json()); //Allows the server to accept JSON data in the body
 
+
 // Routes
+
+
 
 // Auth Routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -29,6 +38,14 @@ app.use('/api/events', require('./routes/eventRoutes'));
 app.use('/api/shows', require('./routes/showRoutes'));
 // Booking Routes
 app.use('/api/bookings', require('./routes/bookingRoutes'));
+// Search Routes
+app.use('/api/search', require('./routes/searchRoutes'));
+
+
+
+
+//Cron Jobs 
+require('./utils/cronJobs');
 
 //Basic Test Route
 app.get('/', (req, res) => {
