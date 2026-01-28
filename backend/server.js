@@ -41,3 +41,14 @@ app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });
 
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.log("--- SYSTEM ERROR DETECTED ---");
+    console.error(err); // This will print the full object to terminal
+    
+    res.status(err.status || 500).json({
+        message: err.message || "Unknown Error",
+        // This stops the [object Object] in Postman
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
+}); 

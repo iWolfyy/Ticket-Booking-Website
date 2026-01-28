@@ -1,32 +1,48 @@
 const Event = require('../models/Event');
 
-// @desc   Create a new event
-// @Route  POST /api/events
-// @access Private (Seller/Admin)
-
+// @desc    Create a new event
+// @route   POST /api/events
+// @access  Private (Seller/Admin)
 exports.createEvent = async (req, res) => {
     try {
-        const { title, description, category, basePrice, metadata } = req.body;
+        const { title } = req.body;
 
-        // Duplicatiion Check: Title + Seller (Case Insensitive)
+        // 1. Duplication Check (Case Insensitive)
         const eventExists = await Event.findOne({
             title: { $regex: new RegExp(`^${title}$`, 'i') },
             seller: req.user._id
         });
 
         if (eventExists) {
-            return res.status(400).json({ message: 'Event with this title already exists' });
+            return res.status(400).json({ message: 'An event with this title already exists for your account.' });
         }
 
-        // Create the event if no duplicate found
+        // 2. Handle the Image URL from Cloudinary
+        // req.file is populated by the upload.single('bannerImage') middleware
+        const bannerImage = req.file ? req.file.path : '';
+
+        // 3. Create the event
+        // We spread req.body and manually add the bannerImage and seller
         const event = await Event.create({
             ...req.body,
-            seller: req.user._id //Pulled from 'protect' middleware
+            bannerImage,
+            seller: req.user._id // Pulled from your 'protect' middleware
         });
 
         res.status(201).json(event);
+
     } catch (error) {
-        res.status(500).json({ message: error.message });  
+        // PROFESSIONAL LOGGING: This helps you see the REAL error in your VS Code terminal
+        console.log("---------- CREATE EVENT ERROR ----------");
+        console.error("Message:", error.message);
+        console.error("Stack Trace:", error.stack);
+        console.log("----------------------------------------");
+
+        // Send a clean JSON response instead of [object Object]
+        res.status(500).json({ 
+            message: "Server Error: " + error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : null
+        });
     }
 };
 
@@ -61,7 +77,7 @@ exports.updateEvent = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to update this event' });
         }
 
-        event = await Event.findByIdandUpdate(req.params.id, req.body, { new: true });
+        event = await Event.findByIdAndUpdate(req.params.id, req.body, { new: true });
         res.json(event);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -83,7 +99,7 @@ exports.deleteEvent = async (req, res) => {
             return res.status(403).json({ message: 'Not authorized to delete this event' });
         }
 
-        await event.remove();
+        await event.deleteOne();
         res.json({ message: 'Event removed' });
     } catch (error) {
         res.status(500).json({ message: error.message });
