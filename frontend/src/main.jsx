@@ -8,7 +8,7 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     {/* The Provider MUST be the parent for components like Dropdowns to work */}
     <HeroUIProvider>
-      <main className="dark text-foreground bg-background min-h-screen">
+      <main className="text-foreground bg-background min-h-screen">
         <App />
       </main>
     </HeroUIProvider>

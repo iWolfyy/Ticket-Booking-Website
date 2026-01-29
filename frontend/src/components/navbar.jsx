@@ -14,7 +14,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
-import { AnimatedThemeToggler } from "@/components/ui/animated-theme-toggler";
+// CHANGED: Imported the correct ModeToggle component
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -104,7 +105,8 @@ export default function Navbar() {
 
         {/* RIGHT: Actions */}
         <div className="flex items-center justify-end space-x-2 md:space-x-4 justify-self-end">
-          <AnimatedThemeToggler />
+          {/* CHANGED: Replaced AnimatedThemeToggler with ModeToggle */}
+          <ModeToggle />
           
           <Button variant="ghost" size="icon" className="relative group hover:bg-accent/50 rounded-full hidden sm:flex">
             <Bell size={20} className="text-muted-foreground transition-colors group-hover:text-foreground" />
