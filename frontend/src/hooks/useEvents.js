@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export const useEvents = () => {
+export const useEvents = (category = null) => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        // Change this URL when your backend is ready
-        // const { data } = await axios.get('http://localhost:5000/api/events/featured');
+        setLoading(true);
+        // If category is provided, fetch specific events, otherwise fetch featured
+        const baseUrl = 'http://localhost:5000/api/events';
+        const url = category 
+          ? `${baseUrl}?category=${category}` 
+          : `${baseUrl}/featured`;
+
+        // const { data } = await axios.get(url);
         // setEvents(data);
 
-        // Simulated delay for testing loading states
+        // Simulated delay
         setTimeout(() => {
           setLoading(false);
         }, 1500);
@@ -22,7 +28,7 @@ export const useEvents = () => {
       }
     };
     fetchEvents();
-  }, []);
+  }, [category]);
 
   return { events, loading };
 };

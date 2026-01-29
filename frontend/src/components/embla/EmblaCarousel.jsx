@@ -5,17 +5,8 @@ import { NextButton, PrevButton, usePrevNextButtons } from './EmblaCarouselArrow
 import { DotButton, useDotButton } from './EmblaCarouselDotButton'
 import { TextAnimate } from "@/components/ui/text-animate"
 import { BlurFade } from "@/components/ui/blur-fade"
-
-// Shadcn & Icons
 import { Badge } from "@/components/ui/badge"
-import { 
-  MapPin, 
-  Star, 
-  Clapperboard, 
-  Music, 
-  Trophy, 
-  Drama 
-} from 'lucide-react'
+import { MapPin, Star, Clapperboard, Music, Trophy, Drama } from 'lucide-react'
 
 const TWEEN_FACTOR_BASE = 0.2
 const AUTOPLAY_DELAY = 4000;
@@ -31,14 +22,14 @@ const getCategoryIcon = (category) => {
   }
 }
 
-// Helper: Get Color Styles based on Category
+// Category Colors
 const getCategoryColor = (category) => {
   switch (category?.toLowerCase()) {
-    case 'movie': return "bg-sky-500/20 text-sky-100 border-sky-400/30 backdrop-blur-md"; 
-    case 'concert': return "bg-purple-500/20 text-purple-100 border-purple-400/30 backdrop-blur-md"; 
-    case 'sports': return "bg-green-500/20 text-green-100 border-green-400/30 backdrop-blur-md"; 
-    case 'theatre': return "bg-red-500/20 text-red-100 border-red-400/30 backdrop-blur-md"; 
-    default: return "bg-gray-500/20 text-gray-100 border-gray-400/30 backdrop-blur-md";
+    case 'movie': return "bg-sky-950/90 text-sky-100 border-sky-800"; 
+    case 'concert': return "bg-purple-950/90 text-purple-100 border-purple-800"; 
+    case 'sports': return "bg-green-950/90 text-green-100 border-green-800"; 
+    case 'theatre': return "bg-red-950/90 text-red-100 border-red-800"; 
+    default: return "bg-gray-950/90 text-gray-100 border-gray-800";
   }
 }
 
@@ -46,7 +37,6 @@ const EmblaCarousel = ({ slides, options }) => {
   const [progressBarKey, setProgressBarKey] = useState(0);
   const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
 
-  // Initialize Autoplay plugin
   const autoplay = useRef(
     Autoplay({ delay: AUTOPLAY_DELAY, stopOnInteraction: false, stopOnMouseEnter: true })
   );
@@ -62,10 +52,7 @@ const EmblaCarousel = ({ slides, options }) => {
   useEffect(() => {
     if (!emblaApi) return;
 
-    // Reset progress bar on new slide selection
     const onSelect = () => setProgressBarKey(prev => prev + 1);
-    
-    // Sync progress bar with Autoplay play/pause states
     const onAutoplayStop = () => setIsAutoplayPaused(true);
     const onAutoplayPlay = () => setIsAutoplayPaused(false);
 
@@ -74,7 +61,7 @@ const EmblaCarousel = ({ slides, options }) => {
       .on('autoplay:stop', onAutoplayStop)
       .on('autoplay:play', onAutoplayPlay);
 
-    // --- Parallax Setup ---
+    // --- Parallax Effect Setup ---
     const setTweenNodes = (emblaApi) => {
       tweenNodes.current = emblaApi.slideNodes().map((slideNode) => {
         return slideNode.querySelector('.embla__parallax__layer')
@@ -106,7 +93,10 @@ const EmblaCarousel = ({ slides, options }) => {
           }
           const translate = diffToTarget * (-1 * tweenFactor.current) * 100
           const tweenNode = tweenNodes.current[slideIndex]
-          if (tweenNode) tweenNode.style.transform = `translate3d(${translate}%,0,0)`
+          if (tweenNode) {
+            // OPTIMIZATION: Use translate3d for hardware acceleration
+            tweenNode.style.transform = `translate3d(${translate}%,0,0)`
+          }
         })
       })
     }
@@ -137,19 +127,29 @@ const EmblaCarousel = ({ slides, options }) => {
           {slides.map((slide, index) => (
             <div className={`embla__slide ${index === selectedIndex ? 'is-selected' : ''}`} key={slide._id || index}>
               <BlurFade delay={0.25 + index * 0.05} inView>
-                <div className="embla__parallax relative group overflow-hidden rounded-3xl">
-                  <div className="embla__parallax__layer">
-                    <img className="embla__slide__img embla__parallax__img" src={slide.url} alt={slide.title} />
+                {/* OPTIMIZATION: Added 'transform-gpu' to force GPU layer promotion */}
+                <div className="embla__parallax relative group overflow-hidden rounded-3xl transform-gpu">
+                  
+                  {/* OPTIMIZATION: Added 'will-change-transform' to hint browser about movement */}
+                  <div className="embla__parallax__layer will-change-transform backface-hidden">
+                    <img 
+                      className="embla__slide__img embla__parallax__img" 
+                      src={slide.bannerImage} 
+                      alt={slide.title}
+                      decoding="async"
+                      // Load first image eagerly, others lazily
+                      loading={index === 0 ? "eager" : "lazy"} 
+                    />
                   </div>
                   
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent flex flex-col justify-end p-6 md:p-12">
                     <div className={`absolute top-6 left-6 md:top-10 md:left-10 flex gap-2 transition-opacity duration-500 ${index === selectedIndex ? 'opacity-100' : 'opacity-0'}`}>
-                      <Badge className={`px-3 py-1 text-sm uppercase tracking-wide flex items-center shadow-lg backdrop-blur-md border-0 ${getCategoryColor(slide.category)}`}>
+                      <Badge className={`px-3 py-1 text-sm uppercase tracking-wide flex items-center shadow-lg border-0 ${getCategoryColor(slide.category)}`}>
                         {getCategoryIcon(slide.category)}
                         {slide.category}
                       </Badge>
                       {slide.rating > 0 && (
-                        <Badge variant="default" className="bg-black/60 border-yellow-500/50 text-yellow-400 backdrop-blur-md px-3 py-1 flex items-center gap-1">
+                        <Badge variant="default" className="bg-black/80 border-yellow-500/50 text-yellow-400 px-3 py-1 flex items-center gap-1">
                           <Star className="w-3.5 h-3.5 fill-yellow-400" />
                           <span className="font-bold">{slide.rating}</span>
                         </Badge>
@@ -162,6 +162,7 @@ const EmblaCarousel = ({ slides, options }) => {
                           {slide.title}
                         </TextAnimate>
                       )}
+                      
                       <div className={`transition-all duration-700 delay-200 ${index === selectedIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                         <p className="text-gray-300 text-sm md:text-lg font-medium mb-2 flex items-center gap-2">
                            {slide.category === 'concert' && slide.metadata?.artists && (
@@ -174,14 +175,16 @@ const EmblaCarousel = ({ slides, options }) => {
                               <span className="text-white">{slide.metadata.teams.home} vs {slide.metadata.teams.away}</span>
                            )}
                         </p>
+                        
                         <div className="flex items-center gap-4 mb-6 text-gray-400 text-sm md:text-base">
                            <div className="flex items-center gap-1">
                               <MapPin className="w-4 h-4" />
-                              {slide.location || 'Venue TBA'}
+                              {slide.venue?.name || 'Venue TBA'}
                            </div>
                            <div className="w-1 h-1 bg-gray-500 rounded-full"></div>
-                           <div className="text-green-400 font-semibold">from Rs. {slide.price?.toLocaleString()}</div>
+                           <div className="text-green-400 font-semibold">from Rs. {slide.basePrice?.toLocaleString()}</div>
                         </div>
+
                         <button className="bg-white text-black px-8 py-3 rounded-full font-bold hover:bg-gray-200 hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)]">
                           Get Tickets
                         </button>
