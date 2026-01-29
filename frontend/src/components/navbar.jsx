@@ -14,7 +14,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ModeToggle } from "@/components/mode-toggle"; // REVERTED IMPORT
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -54,19 +54,15 @@ export default function Navbar() {
     <div
       className={cn(
         "fixed top-0 left-0 right-0 z-50 flex flex-col w-full transition-all duration-500 ease-in-out border-b",
-        // UPDATED: Removed /40 opacity from border so it's visible in light mode
         isScrolled 
           ? "bg-background/80 backdrop-blur-xl shadow-sm border-border/80" 
           : "bg-background border-border"
       )}
     >
-      {/* --- TOP ROW (Always Visible) --- */}
       <div className="grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] h-16 items-center px-4 md:px-8 gap-4">
         
-        {/* LEFT: Logo Section */}
         <div className="flex items-center gap-3 md:gap-4 justify-self-start">
           <SidebarTrigger className="hover:bg-accent/50 transition-colors" />
-          {/* UPDATED: Removed opacity-30 so separator is visible */}
           <Separator orientation="vertical" className="h-6 hidden sm:block" />
           <div className="flex items-center gap-2 group cursor-pointer">
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg transition-all">
@@ -76,7 +72,6 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* CENTER (DESKTOP): Navigation Buttons */}
         <nav className="hidden md:flex items-center justify-center">
           <div className="grid grid-cols-4 gap-4">
             {navLinks.map((link) => (
@@ -92,8 +87,9 @@ export default function Navbar() {
           </div>
         </nav>
 
-        {/* RIGHT: Actions */}
         <div className="flex items-center justify-end space-x-2 md:space-x-4 justify-self-end">
+          
+          {/* REVERTED: Using the standard ModeToggle */}
           <ModeToggle />
           
           <Button variant="ghost" size="icon" className="relative group hover:bg-accent/50 rounded-full hidden sm:flex">
@@ -108,17 +104,13 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Separator: Visible if top of page OR if bottom bar is visible */}
-      {/* UPDATED: Removed opacity-30 */}
       {(isVisible || !isScrolled) && <Separator />}
 
-      {/* --- BOTTOM ROW (Collapsible) --- */}
       <div className={cn(
         "flex items-center px-4 md:px-8 transition-all duration-500 ease-in-out overflow-hidden",
         !isVisible ? "h-0 opacity-0 pointer-events-none" : "h-14 md:h-12 bg-muted/30 opacity-100"
       )}>
         
-        {/* MOBILE ONLY: Horizontal Categories */}
         <div className="md:hidden flex items-center gap-3 overflow-x-auto no-scrollbar w-full pr-4 py-2 mask-linear-fade">
           {navLinks.map((link) => (
              <button
@@ -131,20 +123,17 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* DESKTOP ONLY: Secondary Links */}
         <nav className="hidden md:flex items-center space-x-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
           {["Projects", "Sales", "Team", "Tasks", "Blog"].map((item) => (
             <a key={item} href="#" className="hover:text-foreground transition-colors duration-200">{item}</a>
           ))}
         </nav>
 
-        {/* FLUID SEARCH: Mobile-Aware */}
         <div className="hidden md:flex ml-auto items-center gap-3">
           <div className={cn(
             "relative transition-all duration-500 ease-in-out",
             isSearchFocused ? "w-72" : "w-48"
           )}>
-            {/* UPDATED: Changed bg-background/40 to bg-muted/50 so input is visible in light mode */}
             <Input 
               type="text" 
               placeholder="Search everything..." 

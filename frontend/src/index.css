@@ -7,11 +7,20 @@
 /* 1. HeroUI Integration */
 @source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
 
-/* 2. Fix Animation */
+/* 1. Disable default cross-fade animation */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 2147483646;
+}
+
+/* Optional: Dark mode specific ordering if needed (usually handled by z-index above) */
+.dark::view-transition-old(root) {
+  z-index: 2147483646;
 }
 
 /* 3. Define Variables */
