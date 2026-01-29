@@ -8,6 +8,7 @@ import TicketCarousel from '@/components/TicketCarousel'
 import { useEvents } from '@/hooks/useEvents'
 import '@/components/embla/css/base.css'
 import '@/components/embla/css/embla.css'
+import Footer from '@/components/Footer'
 
 // Import Mock Data
 import { MOCK_EVENTS } from '@/data/mockData'
@@ -116,11 +117,9 @@ export default function App() {
                  aspectRatio="aspect-video" 
                />
            </SectionLoader>
-
-           <div className="container mx-auto px-4 text-center mt-6 text-muted-foreground pb-10">
-             <h3 className="text-lg font-medium">End of Results</h3>
-           </div>
         </main>
+        {/* ADD FOOTER HERE */}
+        <Footer />
       </div>
     </SidebarProvider>
   )
