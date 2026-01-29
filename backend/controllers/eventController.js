@@ -51,7 +51,10 @@ const enrichEventBackground = async (eventId, title, category) => {
           tmdbId: tmdbData.id,
           rating: tmdbData.vote_average,
           description: tmdbData.overview,
-          bannerImage: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : "",
+          // 🎴 Vertical poster (cards, listings)
+          posterImage: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : "",
+          // 🌄 Horizontal backdrop (hero/banner)
+          bannerImage: tmdbData.backdrop_path ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}` : "",
           "metadata.cast": tmdbData.credits?.cast?.slice(0, 5).map((c) => c.name) || [],
           "metadata.director": tmdbData.credits?.crew?.find((p) => p.job === "Director")?.name || "",
         };
@@ -61,7 +64,8 @@ const enrichEventBackground = async (eventId, title, category) => {
       if (data) {
         updateData = {
           description: data.description,
-          bannerImage: data.bannerImage, // This will now be the Fanart.tv high-res URL
+          artistImage: data.bannerImage, // This will now be the Fanart.tv high-res URL
+          artistLogo: data.artistLogo, // This will now be the Fanart.tv low-res URL
           "metadata.discography": data.discography,
           "metadata.artists": [title],
         };
