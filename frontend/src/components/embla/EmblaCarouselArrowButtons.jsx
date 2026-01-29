@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
+import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { Button } from "@/components/ui/button"
 
 export const usePrevNextButtons = (emblaApi) => {
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true)
@@ -33,26 +35,32 @@ export const usePrevNextButtons = (emblaApi) => {
   }
 }
 
-export const PrevButton = (props) => {
-  const { children, ...restProps } = props
+export const PrevButton = ({ disabled, onClick, ...restProps }) => {
   return (
-    <button type="button" className="embla__button embla__button--prev" {...restProps}>
-      <svg className="embla__button__svg" viewBox="0 0 532 532">
-        <path fill="currentColor" d="M355.66 11.354c13.793-13.805 36.208-13.805 50.001 0 13.785 13.804 13.785 36.238 0 50.034L201.22 266l204.442 204.61c13.785 13.805 13.785 36.239 0 50.044-13.793 13.796-36.208 13.796-50.002 0a5994246.277 5994246.277 0 0 0-229.332-229.454 35.065 35.065 0 0 1-10.326-25.126c0-9.2 3.393-18.26 10.326-25.2C172.192 194.973 332.731 34.31 355.66 11.354Z" />
-      </svg>
-      {children}
-    </button>
+    <Button
+      variant="outline"
+      size="icon"
+      className="rounded-full w-10 h-10 md:w-12 md:h-12 bg-white/80 dark:bg-black/50 backdrop-blur-md border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-white dark:hover:bg-black hover:scale-105 transition-all disabled:opacity-30"
+      disabled={disabled}
+      onClick={onClick}
+      {...restProps}
+    >
+      <ArrowLeft className="w-5 h-5 md:w-6 md:h-6 text-zinc-900 dark:text-zinc-100" />
+    </Button>
   )
 }
 
-export const NextButton = (props) => {
-  const { children, ...restProps } = props
+export const NextButton = ({ disabled, onClick, ...restProps }) => {
   return (
-    <button type="button" className="embla__button embla__button--next" {...restProps}>
-      <svg className="embla__button__svg" viewBox="0 0 532 532">
-        <path fill="currentColor" d="M176.34 520.646c-13.793 13.805-36.208 13.805-50.001 0-13.785-13.804-13.785-36.238 0-50.034L330.78 266 126.34 61.391c-13.785-13.805-13.785-36.239 0-50.044 13.793-13.796 36.208-13.796 50.002 0 22.928 22.947 206.395 206.507 229.332 229.454a35.065 35.065 0 0 1 10.326 25.126c0 9.2-3.393 18.26-10.326 25.2-45.865 45.901-206.404 206.564-229.332 229.52Z" />
-      </svg>
-      {children}
-    </button>
+    <Button
+      variant="outline"
+      size="icon"
+      className="rounded-full w-10 h-10 md:w-12 md:h-12 bg-white/80 dark:bg-black/50 backdrop-blur-md border-zinc-200 dark:border-zinc-800 shadow-sm hover:bg-white dark:hover:bg-black hover:scale-105 transition-all disabled:opacity-30"
+      disabled={disabled}
+      onClick={onClick}
+      {...restProps}
+    >
+      <ArrowRight className="w-5 h-5 md:w-6 md:h-6 text-zinc-900 dark:text-zinc-100" />
+    </Button>
   )
 }

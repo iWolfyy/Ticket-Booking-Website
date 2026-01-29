@@ -4,7 +4,7 @@
   margin: auto;
   
   --slide-height: 40vh;
-  --slide-spacing: 1.2rem; /* Increased slightly for better separation */
+  --slide-spacing: 1.2rem;
   --slide-size: 85%;
 }
 
@@ -32,19 +32,17 @@
   flex: 0 0 var(--slide-size);
   min-width: 0;
   padding-left: var(--slide-spacing);
-  /* FIX: Ensure the slide itself clips anything that goes out of bounds */
   overflow: hidden; 
 }
 
 /* --- PARALLAX & ROUNDING FIX --- */
 .embla__parallax {
-  /* FIX: This is the 'Cookie Cutter'. It must have the radius and hidden overflow */
   border-radius: 1.8rem; 
   overflow: hidden;
-  height: var(--slide-height); /* Match the variable height */
+  height: var(--slide-height); 
   width: 100%;
   position: relative;
-  /* Safari fix for rounding overflow issues */
+  /* Safari fix */
   -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
@@ -60,17 +58,15 @@
   display: block;
   flex: 0 0 calc(115% + (var(--slide-spacing) * 2));
   max-width: none;
-  height: 100%; /* Ensure it fills the parallax container */
+  height: 100%;
   object-fit: cover;
-  /* FIX: We don't need radius here because the parent clips it */
-  border-radius: 0; 
 }
 
-/* --- CONTROLS --- */
+/* --- CONTROLS LAYOUT --- */
 .embla__controls {
-  display: grid;
-  grid-template-columns: auto 1fr;
+  display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 1.2rem;
   margin-top: 1.5rem;
   max-width: 1200px; 
@@ -80,76 +76,15 @@
 }
 
 .embla__buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem;
-  align-items: center;
-}
-
-/* --- BUTTON STYLES --- */
-.embla__button {
-  -webkit-tap-highlight-color: transparent;
-  appearance: none;
-  background-color: transparent;
-  touch-action: manipulation;
-  cursor: pointer;
-  border: 0;
-  padding: 0;
-  margin: 0;
-  box-shadow: inset 0 0 0 0.15rem rgb(70, 70, 70); 
-  width: 40px;
-  height: 40px;
-  z-index: 1;
-  border-radius: 50%;
-  color: #ffffff; 
   display: flex;
+  gap: 0.8rem;
   align-items: center;
-  justify-content: center;
-  transition: opacity 0.2s ease;
 }
 
-.embla__button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.embla__button__svg {
-  width: 35%;
-  height: 35%;
-}
-
-/* --- DOTS --- */
 .embla__dots {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   align-items: center;
-}
-
-.embla__dot {
-  appearance: none;
-  background-color: transparent;
-  touch-action: manipulation;
-  cursor: pointer;
-  border: 0;
-  padding: 0;
-  margin: 0 0.4rem;
-  width: 20px;
-  height: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.embla__dot:after {
-  box-shadow: inset 0 0 0 0.2rem rgb(70, 70, 70);
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  content: '';
-  transition: box-shadow 0.2s ease;
-}
-
-.embla__dot--selected:after {
-  box-shadow: inset 0 0 0 0.5rem #ffffff;
+  gap: 0.2rem;
 }

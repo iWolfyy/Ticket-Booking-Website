@@ -2,7 +2,8 @@ import React from 'react'
 import { SidebarProvider, useSidebar } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import Navbar from "@/components/Navbar"
-import { Spinner } from "@/components/ui/spinner"
+// REMOVED: Spinner import
+import { Skeleton } from "@/components/ui/skeleton"
 import EmblaCarousel from '@/components/embla/EmblaCarousel' 
 import TicketCarousel from '@/components/TicketCarousel'     
 import Footer from '@/components/Footer'
@@ -12,7 +13,41 @@ import '@/components/embla/css/embla.css'
 import { ThemeProvider } from "@/components/theme-provider"
 import { MOCK_EVENTS } from '@/data/mockData'
 
-const SectionLoader = ({ title, loading, children }) => (
+// --- 1. Featured Carousel Skeleton ---
+const FeaturedSkeleton = () => (
+  <div className="w-full h-full flex items-center justify-center py-4">
+    {/* Matches the carousel dimensions */}
+    <Skeleton className="w-[85%] h-[40vh] md:w-[60%] md:h-[65vh] rounded-[1.8rem] shadow-sm" />
+  </div>
+)
+
+// --- 2. List (Ticket) Skeleton ---
+const ListSkeleton = ({ count = 5, className, aspectRatio }) => (
+  <div className="w-full max-w-6xl mx-auto px-8 overflow-hidden">
+    <div className="-ml-4 flex">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className={`pl-4 flex-none ${className}`}>
+           <div className="space-y-3">
+             {/* Image Placeholder */}
+             <Skeleton className={`w-full ${aspectRatio} rounded-xl`} />
+             {/* Text Placeholders */}
+             <div className="space-y-2 px-1">
+               <Skeleton className="h-4 w-3/4" />
+               <Skeleton className="h-3 w-1/2" />
+               <div className="flex justify-between items-center pt-1">
+                  <Skeleton className="h-3 w-1/4" />
+                  <Skeleton className="h-3 w-10 rounded-full" />
+               </div>
+             </div>
+           </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+// --- 3. Updated SectionLoader ---
+const SectionLoader = ({ title, loading, fallback, children }) => (
   <section className="w-full mb-10"> 
     <div className="max-w-6xl mx-auto px-8 flex items-center justify-between mb-6">
       <h2 className="text-xl md:text-2xl font-bold tracking-tight">{title}</h2>
@@ -20,13 +55,7 @@ const SectionLoader = ({ title, loading, children }) => (
     </div>
     
     <div className="min-h-[200px]">
-      {loading ? (
-        <div className="max-w-6xl mx-auto px-8 w-full h-[200px]">
-           <div className="w-full h-full bg-muted/30 animate-pulse rounded-xl flex items-center justify-center text-muted-foreground">
-             <Spinner className="mr-2" /> Loading Events...
-           </div>
-        </div>
-      ) : children}
+      {loading ? fallback : children}
     </div>
   </section>
 )
@@ -52,7 +81,6 @@ export default function App() {
   };
 
   return (
-    // FIX: Added attribute="class" to match your Tailwind CSS setup
     <ThemeProvider attribute="class" defaultTheme="dark" storageKey="vite-ui-theme">
       <SidebarProvider defaultOpen={false}>
         <div className="relative z-[100]"><AppSidebar /></div>
@@ -62,14 +90,14 @@ export default function App() {
           <Navbar />
           
           <main className="flex-1 py-10 pt-32 md:pt-36">
-             {/* ... Hero Section ... */}
+             {/* ... Featured Section ... */}
              <section className="w-full mb-12">
                 <div className="px-6 mb-6">
                   <h1 className="text-3xl font-bold tracking-tight">Featured Events</h1>
                 </div>
-                <div className="w-full min-h-[400px] flex items-center justify-center"> 
+                <div className="w-full min-h-[40vh] md:min-h-[65vh] flex items-center justify-center"> 
                   {loadingFeatured ? (
-                     <div className="w-[90%] h-[50vh] bg-muted animate-pulse rounded-3xl" />
+                     <FeaturedSkeleton />
                   ) : (
                     <EmblaCarousel 
                       slides={getData(featuredData, 'featured')} 
@@ -79,8 +107,12 @@ export default function App() {
                 </div>
              </section>
 
-             {/* ... Lists ... */}
-             <SectionLoader title="Trending Movies" loading={loadingMovies}>
+             {/* ... Lists with Skeletons ... */}
+             <SectionLoader 
+               title="Trending Movies" 
+               loading={loadingMovies}
+               fallback={<ListSkeleton count={5} className="basis-1/2 md:basis-1/4 lg:basis-1/5" aspectRatio="aspect-[2/3]" />}
+             >
                  <TicketCarousel 
                    data={getData(movieData, 'movies')} 
                    className="basis-1/2 md:basis-1/4 lg:basis-1/5" 
@@ -88,7 +120,11 @@ export default function App() {
                  />
              </SectionLoader>
 
-             <SectionLoader title="Theatre & Drama" loading={loadingTheatre}>
+             <SectionLoader 
+               title="Theatre & Drama" 
+               loading={loadingTheatre}
+               fallback={<ListSkeleton count={5} className="basis-1/2 md:basis-1/4 lg:basis-1/5" aspectRatio="aspect-[2/3]" />}
+             >
                  <TicketCarousel 
                    data={getData(theatreData, 'theatre')} 
                    className="basis-1/2 md:basis-1/4 lg:basis-1/5"
@@ -96,7 +132,11 @@ export default function App() {
                  />
              </SectionLoader>
 
-             <SectionLoader title="Upcoming Concerts" loading={loadingConcerts}>
+             <SectionLoader 
+               title="Upcoming Concerts" 
+               loading={loadingConcerts}
+               fallback={<ListSkeleton count={4} className="basis-1/1 md:basis-1/3 lg:basis-1/4" aspectRatio="aspect-video" />}
+             >
                  <TicketCarousel 
                    data={getData(concertData, 'concerts')} 
                    className="basis-1/1 md:basis-1/3 lg:basis-1/4" 
@@ -104,7 +144,11 @@ export default function App() {
                  />
              </SectionLoader>
 
-             <SectionLoader title="Sports Events" loading={loadingSports}>
+             <SectionLoader 
+               title="Sports Events" 
+               loading={loadingSports}
+               fallback={<ListSkeleton count={4} className="basis-1/1 md:basis-1/3 lg:basis-1/4" aspectRatio="aspect-video" />}
+             >
                  <TicketCarousel 
                    data={getData(sportsData, 'sports')} 
                    className="basis-1/1 md:basis-1/3 lg:basis-1/4"
