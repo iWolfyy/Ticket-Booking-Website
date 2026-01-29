@@ -14,13 +14,8 @@ const BookingSchema = new mongoose.Schema({
   paymentIntentId: String, // Stripe/Razorpay ID
   status: { type: String, enum: ['pending', 'confirmed', 'failed'], default: 'pending' },
   qrcode: String, // For entry scanning
-  isUsed: {
-    type: Boolean,
-    default: false
-  },
-  usedAt: {
-    type: Date
-  }
+  isUsed: { type: Boolean, default: false },
+  usedAt: { type: Date }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Booking', BookingSchema);
