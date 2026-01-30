@@ -13,10 +13,10 @@ const AUTOPLAY_DELAY = 4000;
 
 const getCategoryIcon = (category) => {
   switch (category?.toLowerCase()) {
-    case 'movie': return <Clapperboard className="w-3.5 h-3.5 mr-1.5" />;
-    case 'concert': return <Music className="w-3.5 h-3.5 mr-1.5" />;
-    case 'sports': return <Trophy className="w-3.5 h-3.5 mr-1.5" />;
-    case 'theatre': return <Drama className="w-3.5 h-3.5 mr-1.5" />;
+    case 'movie': return <Clapperboard className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5" />;
+    case 'concert': return <Music className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5" />;
+    case 'sports': return <Trophy className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5" />;
+    case 'theatre': return <Drama className="w-3 h-3 md:w-3.5 md:h-3.5 mr-1.5" />;
     default: return null;
   }
 }
@@ -117,13 +117,15 @@ const EmblaCarousel = ({ slides, options }) => {
   }, [emblaApi])
 
   return (
-    <div className="embla">
-      <div className="embla__viewport" ref={emblaRef}>
-        <div className="embla__container">
-          {slides.map((slide, index) => (
-            <div className={`embla__slide ${index === selectedIndex ? 'is-selected' : ''}`} key={slide._id || index}>
-              <BlurFade delay={0.25 + index * 0.05} inView>
-                <div className="embla__parallax relative group overflow-hidden rounded-[2rem] transform-gpu shadow-2xl ring-1 ring-black/5 dark:shadow-none dark:ring-0">
+    // UPDATED: BlurFade now wraps the entire carousel component
+    <BlurFade delay={0.25} inView className="w-full">
+      <div className="embla">
+        <div className="embla__viewport" ref={emblaRef}>
+          <div className="embla__container">
+            {slides.map((slide, index) => (
+              <div className={`embla__slide ${index === selectedIndex ? 'is-selected' : ''}`} key={slide._id || index}>
+                {/* REMOVED: Individual BlurFade from here */}
+                <div className="embla__parallax relative group overflow-hidden rounded-[1.8rem] transform-gpu shadow-2xl ring-1 ring-black/5 dark:shadow-none dark:ring-0">
                   
                   <div className="embla__parallax__layer will-change-transform backface-hidden">
                     <img 
@@ -135,19 +137,18 @@ const EmblaCarousel = ({ slides, options }) => {
                     />
                   </div>
                   
-                  {/* FIXED GRADIENT:
-                      - Light Mode: 'from-white/95' (Solid bottom for text) -> 'via-white/25' (Quick fade)
-                      - Dark Mode: Standard black gradient
-                  */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/25 to-transparent dark:from-black/90 dark:via-black/40 dark:to-transparent flex flex-col justify-end p-6 md:p-12">
-                    <div className={`absolute top-6 left-6 md:top-10 md:left-10 flex gap-2 transition-opacity duration-500 ${index === selectedIndex ? 'opacity-100' : 'opacity-0'}`}>
-                      <Badge className={`px-3 py-1 text-sm uppercase tracking-wide flex items-center shadow-lg border-0 ${getCategoryColor(slide.category)}`}>
+                  {/* MOBILE ADJUSTMENTS: p-5 on mobile, p-12 on desktop */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/25 to-transparent dark:from-black/90 dark:via-black/40 dark:to-transparent flex flex-col justify-end p-5 md:p-12">
+                    
+                    {/* MOBILE ADJUSTMENTS: Badges at top-4 left-4 on mobile */}
+                    <div className={`absolute top-4 left-4 md:top-10 md:left-10 flex gap-2 transition-opacity duration-500 origin-top-left ${index === selectedIndex ? 'opacity-100' : 'opacity-0'}`}>
+                      <Badge className={`px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm uppercase tracking-wide flex items-center shadow-lg border-0 ${getCategoryColor(slide.category)}`}>
                         {getCategoryIcon(slide.category)}
                         {slide.category}
                       </Badge>
                       {slide.rating > 0 && (
-                        <Badge variant="default" className="bg-white/90 text-black border-yellow-400 dark:bg-black/80 dark:border-yellow-500/50 dark:text-yellow-400 px-3 py-1 flex items-center gap-1 shadow-md">
-                          <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                        <Badge variant="default" className="bg-white/90 text-black border-yellow-400 dark:bg-black/80 dark:border-yellow-500/50 dark:text-yellow-400 px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm flex items-center gap-1 shadow-md">
+                          <Star className="w-3 h-3 md:w-3.5 md:h-3.5 fill-yellow-400 text-yellow-400" />
                           <span className="font-bold">{slide.rating}</span>
                         </Badge>
                       )}
@@ -155,15 +156,15 @@ const EmblaCarousel = ({ slides, options }) => {
 
                     <div className="w-full">
                       {index === selectedIndex && (
-                        // REMOVED: drop-shadow-[...]
-                        <TextAnimate animation="blurInUp" by="character" className="text-zinc-950 dark:text-white text-4xl md:text-6xl font-bold mb-3 tracking-tight dark:drop-shadow-xl">
+                        // MOBILE ADJUSTMENTS: text-2xl on mobile, text-6xl on desktop
+                        <TextAnimate animation="blurInUp" by="character" className="text-zinc-950 dark:text-white text-2xl sm:text-4xl md:text-6xl font-bold mb-2 md:mb-3 tracking-tight dark:drop-shadow-xl leading-tight">
                           {slide.title}
                         </TextAnimate>
                       )}
                       
                       <div className={`transition-all duration-700 delay-200 ${index === selectedIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                        {/* REMOVED: drop-shadow for subtext */}
-                        <p className="text-zinc-800 dark:text-gray-300 text-sm md:text-lg font-medium mb-2 flex items-center gap-2">
+                        {/* MOBILE ADJUSTMENTS: text-xs on mobile */}
+                        <p className="text-zinc-800 dark:text-gray-300 text-xs sm:text-sm md:text-lg font-medium mb-2 flex items-center gap-2">
                            {slide.category === 'concert' && slide.metadata?.artists && (
                               <><span>Featuring:</span> <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.artists.join(', ')}</span></>
                            )}
@@ -175,58 +176,59 @@ const EmblaCarousel = ({ slides, options }) => {
                            )}
                         </p>
                         
-                        <div className="flex items-center gap-4 mb-6 text-zinc-700 dark:text-gray-400 text-sm md:text-base font-medium">
+                        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 text-zinc-700 dark:text-gray-400 text-xs sm:text-sm md:text-base font-medium">
                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {slide.venue?.name || 'Venue TBA'}
+                              <MapPin className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                              <span className="truncate max-w-[150px] md:max-w-none">{slide.venue?.name || 'Venue TBA'}</span>
                            </div>
                            <div className="w-1 h-1 bg-zinc-600 dark:bg-gray-500 rounded-full"></div>
                            <div className="text-green-700 dark:text-green-400 font-bold">from Rs. {slide.basePrice?.toLocaleString()}</div>
                         </div>
 
-                        <button className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 px-8 py-3 rounded-full font-bold hover:scale-105 transition-all shadow-lg hover:shadow-xl">
+                        {/* MOBILE ADJUSTMENTS: Smaller button padding */}
+                        <button className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 px-6 py-2 md:px-8 md:py-3 text-sm md:text-base rounded-full font-bold hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                           Get Tickets
                         </button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </BlurFade>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="embla__controls">
-        <div className="embla__buttons">
-          <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
-          <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 flex-1 justify-end">
-           <div className="relative w-full max-w-[120px] md:max-w-[200px] h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
-              <div 
-                key={progressBarKey}
-                className="absolute top-0 left-0 h-full bg-zinc-900 dark:bg-white animate-carousel-progress"
-                style={{ 
-                  animationDuration: `${AUTOPLAY_DELAY}ms`,
-                  animationPlayState: isAutoplayPaused ? 'paused' : 'running' 
-                }}
-              />
-           </div>
-           
-           <div className="embla__dots">
-             {scrollSnaps.map((_, index) => (
-               <DotButton
-                 key={index}
-                 selected={index === selectedIndex}
-                 onClick={() => onDotButtonClick(index)}
-               />
-             ))}
-           </div>
+        <div className="embla__controls">
+          <div className="embla__buttons">
+            <PrevButton onClick={onPrevButtonClick} disabled={prevBtnDisabled} />
+            <NextButton onClick={onNextButtonClick} disabled={nextBtnDisabled} />
+          </div>
+
+          <div className="flex items-center gap-4 flex-1 justify-end">
+             <div className="relative w-full max-w-[100px] md:max-w-[200px] h-1 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+                <div 
+                  key={progressBarKey}
+                  className="absolute top-0 left-0 h-full bg-zinc-900 dark:bg-white animate-carousel-progress"
+                  style={{ 
+                    animationDuration: `${AUTOPLAY_DELAY}ms`,
+                    animationPlayState: isAutoplayPaused ? 'paused' : 'running' 
+                  }}
+                />
+             </div>
+             
+             <div className="embla__dots">
+               {scrollSnaps.map((_, index) => (
+                 <DotButton
+                   key={index}
+                   selected={index === selectedIndex}
+                   onClick={() => onDotButtonClick(index)}
+                 />
+               ))}
+             </div>
+          </div>
         </div>
       </div>
-    </div>
+    </BlurFade>
   )
 }
 
