@@ -117,14 +117,12 @@ const EmblaCarousel = ({ slides, options }) => {
   }, [emblaApi])
 
   return (
-    // UPDATED: BlurFade now wraps the entire carousel component
     <BlurFade delay={0.25} inView className="w-full">
       <div className="embla">
         <div className="embla__viewport" ref={emblaRef}>
           <div className="embla__container">
             {slides.map((slide, index) => (
               <div className={`embla__slide ${index === selectedIndex ? 'is-selected' : ''}`} key={slide._id || index}>
-                {/* REMOVED: Individual BlurFade from here */}
                 <div className="embla__parallax relative group overflow-hidden rounded-[1.8rem] transform-gpu shadow-2xl ring-1 ring-black/5 dark:shadow-none dark:ring-0">
                   
                   <div className="embla__parallax__layer will-change-transform backface-hidden">
@@ -137,10 +135,8 @@ const EmblaCarousel = ({ slides, options }) => {
                     />
                   </div>
                   
-                  {/* MOBILE ADJUSTMENTS: p-5 on mobile, p-12 on desktop */}
                   <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/25 to-transparent dark:from-black/90 dark:via-black/40 dark:to-transparent flex flex-col justify-end p-5 md:p-12">
                     
-                    {/* MOBILE ADJUSTMENTS: Badges at top-4 left-4 on mobile */}
                     <div className={`absolute top-4 left-4 md:top-10 md:left-10 flex gap-2 transition-opacity duration-500 origin-top-left ${index === selectedIndex ? 'opacity-100' : 'opacity-0'}`}>
                       <Badge className={`px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm uppercase tracking-wide flex items-center shadow-lg border-0 ${getCategoryColor(slide.category)}`}>
                         {getCategoryIcon(slide.category)}
@@ -149,30 +145,32 @@ const EmblaCarousel = ({ slides, options }) => {
                       {slide.rating > 0 && (
                         <Badge variant="default" className="bg-white/90 text-black border-yellow-400 dark:bg-black/80 dark:border-yellow-500/50 dark:text-yellow-400 px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-sm flex items-center gap-1 shadow-md">
                           <Star className="w-3 h-3 md:w-3.5 md:h-3.5 fill-yellow-400 text-yellow-400" />
-                          <span className="font-bold">{slide.rating}</span>
+                          <span className="font-bold">{Number(slide.rating).toFixed(1)}</span>
                         </Badge>
                       )}
                     </div>
 
                     <div className="w-full">
                       {index === selectedIndex && (
-                        // MOBILE ADJUSTMENTS: text-2xl on mobile, text-6xl on desktop
                         <TextAnimate animation="blurInUp" by="character" className="text-zinc-950 dark:text-white text-2xl sm:text-4xl md:text-6xl font-bold mb-2 md:mb-3 tracking-tight dark:drop-shadow-xl leading-tight">
                           {slide.title}
                         </TextAnimate>
                       )}
                       
                       <div className={`transition-all duration-700 delay-200 ${index === selectedIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                        {/* MOBILE ADJUSTMENTS: text-xs on mobile */}
                         <p className="text-zinc-800 dark:text-gray-300 text-xs sm:text-sm md:text-lg font-medium mb-2 flex items-center gap-2">
+                           {/* UPDATED: Path updated to metadata object structure */}
                            {slide.category === 'concert' && slide.metadata?.artists && (
-                              <><span>Featuring:</span> <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.artists.join(', ')}</span></>
+                             <><span>Featuring:</span> <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.artists.join(', ')}</span></>
                            )}
+                           {/* UPDATED: Path updated for Movie cast (handles objects) */}
                            {slide.category === 'movie' && slide.metadata?.cast && (
-                              <><span>Starring:</span> <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.cast.slice(0, 3).join(', ')}</span></>
+                             <><span>Starring:</span> <span className="text-zinc-950 dark:text-white font-semibold">
+                               {slide.metadata.cast.slice(0, 3).map(c => typeof c === 'string' ? c : c.name).join(', ')}
+                             </span></>
                            )}
                            {slide.category === 'sports' && slide.metadata?.teams && (
-                              <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.teams.home} vs {slide.metadata.teams.away}</span>
+                             <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.teams.home} vs {slide.metadata.teams.away}</span>
                            )}
                         </p>
                         
@@ -185,7 +183,6 @@ const EmblaCarousel = ({ slides, options }) => {
                            <div className="text-green-700 dark:text-green-400 font-bold">from Rs. {slide.basePrice?.toLocaleString()}</div>
                         </div>
 
-                        {/* MOBILE ADJUSTMENTS: Smaller button padding */}
                         <button className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 px-6 py-2 md:px-8 md:py-3 text-sm md:text-base rounded-full font-bold hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                           Get Tickets
                         </button>

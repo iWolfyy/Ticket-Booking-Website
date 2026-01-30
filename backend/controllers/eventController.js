@@ -45,17 +45,50 @@ const enrichEventBackground = async (eventId, title, category) => {
     let updateData = {};
 
     if (category === "movie") {
-      const tmdbData = await fetchMovieFromTMDB(title);
+      // Ensure your fetchMovieFromTMDB helper uses append_to_response=credits
+      const tmdbData = await fetchMovieFromTMDB(title); 
+      
       if (tmdbData) {
         updateData = {
           tmdbId: tmdbData.id,
           rating: tmdbData.vote_average,
           description: tmdbData.overview,
-          // 🎴 Vertical poster (cards, listings)
           posterImage: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : "",
-          // 🌄 Horizontal backdrop (hero/banner)
           bannerImage: tmdbData.backdrop_path ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}` : "",
-          "metadata.cast": tmdbData.credits?.cast?.slice(0, 5).map((c) => c.name) || [],
+          
+          // NEW FIELDS MAPPING
+          "metadata.status": tmdbData.status,
+          "metadata.runtime": tmdbData.runtime,
+          "metadata.budget": tmdbData.budget,
+          "metadata.revenue": tmdbData.revenue,
+          "metadata.genres": tmdbData.genres?.map(g => g.name) || [],
+          "metadata.releaseDate": tmdbData.release_date,
+          "metadata.keywords": tmdbData.keywords?.keywords?.map(k => k.name) || [],
+          
+          // Production Companies with Logos
+          "metadata.productionCompanies": tmdbData.production_companies?.map(pc => ({
+            name: pc.name,
+            logo: pc.logo_path ? `https://image.tmdb.org/t/p/w200${pc.logo_path}` : ""
+          })) || [],
+
+          // Detailed Cast Mapping
+          "metadata.cast": tmdbData.credits?.cast?.slice(0, 10).map((c) => ({
+            name: c.name,
+            character: c.character,
+            profileImage: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : "",
+            biography: "" // Note: Individual bios require a separate /person/{id} call
+          })) || [],
+
+          // Detailed Crew Mapping
+          "metadata.crew": tmdbData.credits?.crew?.filter(c => 
+            ["Director", "Producer", "Screenplay", "Original Music Composer"].includes(c.job)
+          ).map(c => ({
+            name: c.name,
+            job: c.job,
+            profileImage: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : ""
+          })) || [],
+
+          // Maintain legacy director field for quick access
           "metadata.director": tmdbData.credits?.crew?.find((p) => p.job === "Director")?.name || "",
         };
       }
@@ -64,8 +97,8 @@ const enrichEventBackground = async (eventId, title, category) => {
       if (data) {
         updateData = {
           description: data.description,
-          artistImage: data.bannerImage, // This will now be the Fanart.tv high-res URL
-          artistLogo: data.artistLogo, // This will now be the Fanart.tv low-res URL
+          artistImage: data.bannerImage,
+          artistLogo: data.artistLogo,
           "metadata.discography": data.discography,
           "metadata.artists": [title],
         };

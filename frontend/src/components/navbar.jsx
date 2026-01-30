@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle"; // REVERTED IMPORT
+import { Link } from "react-router-dom";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -68,7 +69,7 @@ export default function Navbar() {
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg transition-all">
               <Hexagon size={18} fill="currentColor" />
             </div>
-            <span className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</span>
+            <Link to="/" span className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</Link>
           </div>
         </div>
 

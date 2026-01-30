@@ -17,7 +17,7 @@ const EventSchema = new mongoose.Schema(
 
     // External API IDs
     tmdbId: { type: String, default: null },
-    spotifyId: { type: String, default: null }, // Link to Spotify Artist
+    spotifyId: { type: String, default: null }, 
     rating: { type: Number, default: 0 },
 
     seller: {
@@ -27,11 +27,47 @@ const EventSchema = new mongoose.Schema(
     },
 
     metadata: {
+      // General TMDB/Theatrical Extensions
+      status: String,             // e.g., "Released", "In Production"
+      runtime: Number,            // In minutes
+      budget: Number,             // Financials
+      revenue: Number,            // Financials
+      genres: [String],           // Array of genres
+      releaseDate: Date,          // Regional release date
+      contentRating: String,      // e.g., "PG-13", "R"
+      keywords: [String],         // Metadata tags for search
+      
+      // Production Companies
+      productionCompanies: [
+        {
+          name: String,
+          logo: String,           // Logo URL from TMDB
+        }
+      ],
+
+      // Advanced Cast List (With Bios and Roles)
+      cast: [
+        {
+          name: String,
+          character: String,
+          profileImage: String,
+          biography: String,      // Actor Bios
+        }
+      ],
+
+      // Advanced Crew List
+      crew: [
+        {
+          name: String,
+          job: String,            // e.g., "Director", "Producer"
+          profileImage: String,
+        }
+      ],
+
       // Concert Specific
       artists: [String],
       discography: [
         {
-          // New: Store albums with titles and release years
           title: String,
           year: String,
           image: String,
@@ -41,10 +77,9 @@ const EventSchema = new mongoose.Schema(
       // Sports Specific
       teams: { home: String, away: String },
       league: String,
-
-      // Movies/Theatre Specific
-      cast: [String],
-      director: String,
+      
+      // Keep legacy fields for backward compatibility if needed
+      director: String, 
     },
 
     isFeatured: { type: Boolean, default: false },

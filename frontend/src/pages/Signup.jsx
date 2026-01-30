@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ const EventCard = ({ posterImage, title }) => (
 export default function Register() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { enqueueSnackbar } = useSnackbar();
   
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -47,11 +46,11 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-      return enqueueSnackbar("Passwords do not match", { variant: "error" });
+      return toast.error("Passwords do not match");
     }
     setLoading(true);
     setTimeout(() => {
-      enqueueSnackbar("Account created successfully!", { variant: "success" });
+      toast.success("Account created successfully!");
       navigate("/login");
       setLoading(false);
     }, 1200);

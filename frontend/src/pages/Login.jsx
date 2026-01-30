@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSnackbar } from "notistack";
+import { toast } from "sonner";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,6 @@ const EventCard = ({ posterImage, title }) => (
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
-  const { enqueueSnackbar } = useSnackbar();
   
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -41,7 +40,7 @@ export default function Login() {
     setLoading(true);
     setTimeout(() => {
       login({ name: "User", email });
-      enqueueSnackbar("Successfully logged in", { variant: "success" });
+      toast.success("Successfully logged in");
       navigate("/");
       setLoading(false);
     }, 1200);
