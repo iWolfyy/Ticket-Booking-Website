@@ -10,6 +10,7 @@ const ShowSchema = new mongoose.Schema({
   // For Cinema/Theatre: Array of specific seats
   // For Sports/Concerts: Map of remaining capacity per section
   availability: [{
+    sectionId: mongoose.Schema.Types.ObjectId,
     sectionName: String,
     totalSeats: Number,
     availableSeats: Number,

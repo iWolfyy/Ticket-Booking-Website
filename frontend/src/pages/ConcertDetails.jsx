@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { 
   LucideStar, LucideMapPin, LucideInfo, LucideArrowLeft, 
-  LucideUser, LucideMusic, LucideDisc, LucideChevronRight,
-  LucideMic2, LucideUsers
+  LucideUser, LucideDisc, LucideChevronRight, LucideUsers
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { RainbowButton } from "@/components/ui/rainbow-button";
+import { Marquee } from "@/components/ui/marquee"; // Use named import to fix export error
 import { cn } from "@/lib/utils";
 
 import { MOCK_EVENTS } from "@/data/mockdata";
@@ -19,7 +19,6 @@ export default function ConcertDetails() {
   const { id } = useParams();
   const [selectedVenue, setSelectedVenue] = useState(null);
   const [selectedDate, setSelectedDate] = useState(null);
-  const [selectedTime, setSelectedTime] = useState(null);
 
   const allEvents = Object.values(MOCK_EVENTS).flat();
   const event = allEvents.find((e) => e._id === id);
@@ -35,8 +34,6 @@ export default function ConcertDetails() {
     { id: "d1", day: "FRI", date: "30", month: "JAN" },
     { id: "d2", day: "SAT", date: "31", month: "JAN" }
   ];
-
-  const times = ["06:00 PM", "08:30 PM", "11:00 PM"];
 
   return (
     <div className="min-h-screen bg-background pb-20 text-foreground transition-colors duration-300">
@@ -122,37 +119,48 @@ export default function ConcertDetails() {
             </div>
           </BlurFade>
 
-          {/* THE BENTO GRID DISCOGRAPHY */}
+          {/* MAGICUI MARQUEE DISCOGRAPHY - FULL COLOR */}
           {event.metadata?.discography?.length > 0 && (
             <BlurFade delay={0.4}>
-              <div className="space-y-8">
+              <div className="space-y-8 overflow-hidden">
                 <div className="flex items-center gap-3">
                   <LucideDisc className="text-primary animate-spin-slow" size={24} />
-                  <h3 className="text-2xl font-black italic uppercase tracking-tighter">Top Albums</h3>
+                  <h3 className="text-2xl font-black italic uppercase tracking-tighter">Artist Top Albums</h3>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 auto-rows-[200px]">
-                  {event.metadata.discography.slice(0, 5).map((album, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "relative group overflow-hidden rounded-3xl border border-border bg-accent/50 transition-all hover:scale-[1.02]",
-                        // REINSTATED: Original Bento logic
-                        idx === 0 ? "md:col-span-2 md:row-span-2" : "col-span-1"
-                      )}
-                    >
-                      <img src={album.image} alt={album.title} className="absolute inset-0 h-full w-full object-cover opacity-80" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent opacity-90" />
-                      <div className="absolute bottom-0 left-0 p-6 w-full text-white">
-                        {album.year !== "N/A" && (
-                          <Badge variant="outline" className="mb-2 border-white/50 text-[8px] text-white uppercase font-black">{album.year}</Badge>
-                        )}
-                        <h4 className={cn("font-black italic uppercase leading-none", idx === 0 ? "text-3xl" : "text-sm")}>
-                          {album.title}
-                        </h4>
+                <div className="relative flex w-full flex-col items-center justify-center overflow-hidden">
+                  <Marquee pauseOnHover className="[--duration:40s]">
+                    {event.metadata.discography.map((album, idx) => (
+                      <div
+                        key={idx}
+                        className="relative w-64 cursor-pointer overflow-hidden rounded-2xl border border-border bg-accent/50 transition-all hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 mx-4 group"
+                      >
+                        <div className="aspect-square w-full relative">
+                          <img 
+                            src={album.image} 
+                            alt={album.title} 
+                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                        </div>
+                        
+                        <div className="absolute bottom-0 left-0 p-5 w-full text-white">
+                          {album.year !== "N/A" && (
+                            <Badge variant="outline" className="mb-2 border-white/30 text-[8px] text-white uppercase font-black bg-black/40 backdrop-blur-sm">
+                              {album.year}
+                            </Badge>
+                          )}
+                          <h4 className="font-black italic uppercase leading-none text-sm truncate tracking-tighter">
+                            {album.title}
+                          </h4>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </Marquee>
+
+                  {/* Fade Overlays */}
+                  <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-background to-transparent z-10"></div>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-background to-transparent z-10"></div>
                 </div>
               </div>
             </BlurFade>
@@ -165,7 +173,6 @@ export default function ConcertDetails() {
             <Card className="border-border bg-card shadow-xl sticky top-24 overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-purple-500 to-primary" />
               <CardContent className="p-8 space-y-8">
-                {/* 1. VENUE */}
                 <div className="space-y-4">
                   <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">1. Select Venue</p>
                   <div className="space-y-2">
@@ -188,14 +195,13 @@ export default function ConcertDetails() {
                   </div>
                 </div>
 
-                {/* 2. DATE */}
                 <div className={cn("space-y-4 transition-opacity", !selectedVenue && "opacity-30 pointer-events-none")}>
                   <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">2. Select Date</p>
                   <div className="flex gap-2">
                     {dates.map((d) => (
                       <button 
                         key={d.id} 
-                        onClick={() => { setSelectedDate(d.id); setSelectedTime(null); }}
+                        onClick={() => { setSelectedDate(d.id); }}
                         className={cn(
                           "flex flex-col items-center justify-center w-14 h-16 rounded-xl border transition-all",
                           selectedDate === d.id ? "border-primary bg-primary/10 text-primary ring-1 ring-primary" : "border-border bg-card hover:bg-accent"

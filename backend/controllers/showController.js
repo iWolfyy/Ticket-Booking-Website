@@ -135,3 +135,20 @@ exports.deleteShow = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 }
+
+// @desc    Get show by ID
+// @route   GET /api/shows/:id
+// @access  Public
+
+exports.getShowByID = async (req, res) => {
+    try {
+        const show = await Show.findById(req.params.id)
+            .populate('venue', 'name city address venueType sections')
+            .populate('event', 'title category description');
+        if (!show) return res.status(404).json({ message: 'Show not found' });
+        res.json(show);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+        
