@@ -128,7 +128,7 @@ const EmblaCarousel = ({ slides, options }) => {
                   <div className="embla__parallax__layer will-change-transform backface-hidden">
                     <img 
                       className="embla__slide__img embla__parallax__img" 
-                      src={slide.bannerImage} 
+                      src={slide.bannerImage || slide.artistImage} 
                       alt={slide.title}
                       decoding="async"
                       loading={index === 0 ? "eager" : "lazy"} 
@@ -159,18 +159,32 @@ const EmblaCarousel = ({ slides, options }) => {
                       
                       <div className={`transition-all duration-700 delay-200 ${index === selectedIndex ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                         <p className="text-zinc-800 dark:text-gray-300 text-xs sm:text-sm md:text-lg font-medium mb-2 flex items-center gap-2">
-                           {/* UPDATED: Path updated to metadata object structure */}
-                           {slide.category === 'concert' && slide.metadata?.artists && (
-                             <><span>Featuring:</span> <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.artists.join(', ')}</span></>
+                           
+                           {/* CONCERT: Title already displayed, now show Artist and Featuring Lineup */}
+                           {slide.category === 'concert' && (
+                             <>
+                               <span className="text-zinc-950 dark:text-white font-bold">{slide.artistName}</span>
+                               {slide.metadata?.artists?.length > 0 && (
+                                 <span className="text-muted-foreground italic text-[0.85em]"> ft. {slide.metadata.artists.join(', ')}</span>
+                               )}
+                             </>
                            )}
-                           {/* UPDATED: Path updated for Movie cast (handles objects) */}
-                           {slide.category === 'movie' && slide.metadata?.cast && (
-                             <><span>Starring:</span> <span className="text-zinc-950 dark:text-white font-semibold">
-                               {slide.metadata.cast.slice(0, 3).map(c => typeof c === 'string' ? c : c.name).join(', ')}
-                             </span></>
+
+                           {/* MOVIE/THEATRE: Uses cast objects */}
+                           {(slide.category === 'movie' || slide.category === 'theatre') && slide.metadata?.cast && (
+                             <>
+                               <span>Starring:</span> 
+                               <span className="text-zinc-950 dark:text-white font-semibold">
+                                 {slide.metadata.cast.slice(0, 3).map(c => typeof c === 'string' ? c : c.name).join(', ')}
+                               </span>
+                             </>
                            )}
+
+                           {/* SPORTS: Uses teams object */}
                            {slide.category === 'sports' && slide.metadata?.teams && (
-                             <span className="text-zinc-950 dark:text-white font-semibold">{slide.metadata.teams.home} vs {slide.metadata.teams.away}</span>
+                             <span className="text-zinc-950 dark:text-white font-semibold">
+                               {slide.metadata.teams.home} vs {slide.metadata.teams.away}
+                             </span>
                            )}
                         </p>
                         
@@ -229,4 +243,4 @@ const EmblaCarousel = ({ slides, options }) => {
   )
 }
 
-export default EmblaCarousel
+export default EmblaCarousel;

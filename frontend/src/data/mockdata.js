@@ -2,26 +2,85 @@
 
 export const MOCK_EVENTS = {
   featured: [
-    {
-      _id: 'f1',
-      title: 'The Weeknd: After Hours til Dawn',
-      description: 'Experience the global phenomenon in Sri Lanka. A night of cinematic pop and R&B featuring high-octane production and a dystopian stage design.',
-      category: 'concert',
-      basePrice: 15000,
-      rating: 4.9,
-      bannerImage: 'https://www.milanopera-tickets.com/imagini-w/1920/63480aab09a2990294a5aac2ea44806382d94.jpg',
-      posterImage: 'https://i.pinimg.com/736x/4e/78/33/4e783321523e1124619d854ce55a7304.jpg',
-      venue: { name: 'Sugathadasa Stadium', city: 'Colombo' },
-      metadata: {
-        artists: ['The Weeknd', 'Kaytranada'],
-        discography: [
-          { title: "After Hours", year: "2020", image: "https://upload.wikimedia.org/wikipedia/en/c/c1/The_Weeknd_-_After_Hours.png" },
-          { title: "Dawn FM", year: "2022", image: "https://upload.wikimedia.org/wikipedia/en/b/b9/The_Weeknd_-_Dawn_FM.png" },
-          { title: "Starboy", year: "2016", image: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png" },
-          { title: "Beauty Behind the Madness", year: "2015", image: "https://upload.wikimedia.org/wikipedia/en/b/bd/The_Weeknd_-_Beauty_Behind_the_Madness.png" }
-        ]
-      },
-      isFeatured: true
+        {
+        "metadata": {
+            "artists": ["Playboi Carti, Travis Scott, Kaytranada"],
+            "genres": [],
+            "keywords": [],
+            "discography": [
+                {
+                    "title": "Starboy",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/08e3f15aca0423b084fb49f342756f3b.png",
+                    "_id": "697d030680cb0a1226809a66"
+                },
+                {
+                    "title": "After Hours",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/4583932b753c96d0d2f22fe9774e5ef3.png",
+                    "_id": "697d030680cb0a1226809a67"
+                },
+                {
+                    "title": "Beauty Behind the Madness",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/8a54e33c0046d4752bcf56b37adaa97c.png",
+                    "_id": "697d030680cb0a1226809a68"
+                },
+                {
+                    "title": "My Dear Melancholy,",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/6498660830a525a64f6a78bf94a2ec58.png",
+                    "_id": "697d030680cb0a1226809a69"
+                },
+                {
+                    "title": "Dawn FM",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/34734ed0582256618ec64d4f90b4ebf4.png",
+                    "_id": "697d030680cb0a1226809a6a"
+                },
+                {
+                    "title": "Trilogy",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/420479ebfa2c11e0c9310d2183854446.png",
+                    "_id": "697d030680cb0a1226809a6b"
+                },
+                {
+                    "title": "Hurry Up Tomorrow",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/706f247829fbe0ee14febb195c6200c4.png",
+                    "_id": "697d030680cb0a1226809a6c"
+                },
+                {
+                    "title": "The Idol Episode 4 (Music from the HBO Original Series)",
+                    "year": "N/A",
+                    "image": "https://lastfm.freetls.fastly.net/i/u/300x300/e13437ab4c8ebd7603289739b9f194f7.png",
+                    "_id": "697d030680cb0a1226809a6d"
+                }
+            ],
+            "productionCompanies": [],
+            "cast": [],
+            "crew": []
+        },
+        "_id": "f1",
+        "title": "After Hours Till Dawn",
+        "artistName": "The Weeknd",
+        "category": "concert",
+        "bannerImage": "https://www.milanopera-tickets.com/imagini-w/1920/63480aab09a2990294a5aac2ea44806382d94.jpg",
+        "basePrice": 15000,
+        "tmdbId": null,
+        "spotifyId": null,
+        "rating": 0,
+        "seller": {
+            "_id": "6979067553f4092273a1ee47",
+            "name": "Pavithra Seller",
+            "email": "seller@test.com"
+        },
+        "isFeatured": false,
+        "createdAt": "2026-01-30T19:14:11.303Z",
+        "updatedAt": "2026-01-30T19:14:14.069Z",
+        "__v": 0,
+        "artistImage": "https://assets.fanart.tv/fanart/the-weeknd-4ee6928ad3a11.jpg",
+        "description": "Abel Makkonen Tesfaye, popularly known as The Weeknd (born February 16, 1990 in Toronto, Ontario, Canada), is a Canadian R&B/hip-hop musician, singer-songwriter and record producer. He chose his stage name in tribute to when he was 17 years old, when, along with his friend La Mar Taylor, he dropped out of high school, took his mattress, and \"left one weekend and never came home\". However, his estranged former producer Jeremy Rose claims the name was his idea. "
     },
 {
       _id: 'f2',

@@ -7,7 +7,7 @@ const { fetchArtistDetails } = require("../utils/musicHandler");
 // @access  Private (Seller/Admin)
 exports.createEvent = async (req, res) => {
   try {
-    const { title, category } = req.body;
+    const { title, category, artistName } = req.body;
 
     // 1. Immediate Duplication Check
     const eventExists = await Event.findOne({
@@ -28,9 +28,9 @@ exports.createEvent = async (req, res) => {
     // 3. Fire and Forget: Background Enrichment
     // We don't use 'await' here so the response sends immediately
     if (category === "movie") {
-      enrichEventBackground(event._id, title, category);
+      enrichEventBackground(event._id, title, category, artistName);
     } else if (category === "concert") {
-      enrichEventBackground(event._id, title, category);
+      enrichEventBackground(event._id, title, category, artistName);
     }
 
     res.status(201).json(event);
@@ -39,15 +39,13 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-// Background Function to fetch movie details from TMDB or fetch artist discography
-const enrichEventBackground = async (eventId, title, category) => {
+
+const enrichEventBackground = async (eventId, title, category, artistName) => {
   try {
     let updateData = {};
 
     if (category === "movie") {
-      // Ensure your fetchMovieFromTMDB helper uses append_to_response=credits
       const tmdbData = await fetchMovieFromTMDB(title); 
-      
       if (tmdbData) {
         updateData = {
           tmdbId: tmdbData.id,
@@ -55,8 +53,6 @@ const enrichEventBackground = async (eventId, title, category) => {
           description: tmdbData.overview,
           posterImage: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : "",
           bannerImage: tmdbData.backdrop_path ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}` : "",
-          
-          // NEW FIELDS MAPPING
           "metadata.status": tmdbData.status,
           "metadata.runtime": tmdbData.runtime,
           "metadata.budget": tmdbData.budget,
@@ -64,56 +60,50 @@ const enrichEventBackground = async (eventId, title, category) => {
           "metadata.genres": tmdbData.genres?.map(g => g.name) || [],
           "metadata.releaseDate": tmdbData.release_date,
           "metadata.keywords": tmdbData.keywords?.keywords?.map(k => k.name) || [],
-          
-          // Production Companies with Logos
           "metadata.productionCompanies": tmdbData.production_companies?.map(pc => ({
             name: pc.name,
             logo: pc.logo_path ? `https://image.tmdb.org/t/p/w200${pc.logo_path}` : ""
           })) || [],
-
-          // Detailed Cast Mapping
           "metadata.cast": tmdbData.credits?.cast?.slice(0, 10).map((c) => ({
             name: c.name,
             character: c.character,
-            profileImage: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : "",
-            biography: "" // Note: Individual bios require a separate /person/{id} call
-          })) || [],
-
-          // Detailed Crew Mapping
-          "metadata.crew": tmdbData.credits?.crew?.filter(c => 
-            ["Director", "Producer", "Screenplay", "Original Music Composer"].includes(c.job)
-          ).map(c => ({
-            name: c.name,
-            job: c.job,
             profileImage: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : ""
           })) || [],
-
-          // Maintain legacy director field for quick access
           "metadata.director": tmdbData.credits?.crew?.find((p) => p.job === "Director")?.name || "",
         };
       }
-    } else if (category === "concert") {
-      const data = await fetchArtistDetails(title);
-      if (data) {
+    } 
+    
+    else if (category === "concert") {
+      const data = await fetchArtistDetails(artistName);
+
+      // FIXED: Added check for 'data' and 'discography' to prevent 'undefined' crash
+      if (data && data.discography) {
         updateData = {
-          description: data.description,
-          artistImage: data.bannerImage,
-          artistLogo: data.artistLogo,
-          "metadata.discography": data.discography,
-          "metadata.artists": [title],
+          description: data.description || "",
+          artistImage: data.bannerImage || "",
+          artistLogo: data.artistLogo || "",
+          // Use optional chaining for each album in the array
+          "metadata.discography": data.discography.map(album => ({
+            title: album?.title || "Unknown Album",
+            year: album?.year || "N/A",
+            image: album?.image || ""
+          })),
+          "metadata.featuringArtists": [], 
         };
+      } else {
+        console.warn(`Sync Warning: No music data found for "${artistName}"`);
       }
     }
 
     if (Object.keys(updateData).length > 0) {
       await Event.findByIdAndUpdate(eventId, { $set: updateData });
-      console.log(`Background Sync Complete for ${category}: ${title}`);
+      console.log(`Sync Complete: ${title}`);
     }
   } catch (err) {
-    console.error("Background Enrichment Failed:", err.message);
+    console.error("Sync Failed:", err.message);
   }
 };
-
 
 
 // @desc    Get all events

@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const EventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true, index: true },
+    artistName: { type: String },        // Added: Primary artist name for display and API fetching
     description: { type: String },
     category: {
       type: String,
@@ -27,45 +28,8 @@ const EventSchema = new mongoose.Schema(
     },
 
     metadata: {
-      // General TMDB/Theatrical Extensions
-      status: String,             // e.g., "Released", "In Production"
-      runtime: Number,            // In minutes
-      budget: Number,             // Financials
-      revenue: Number,            // Financials
-      genres: [String],           // Array of genres
-      releaseDate: Date,          // Regional release date
-      contentRating: String,      // e.g., "PG-13", "R"
-      keywords: [String],         // Metadata tags for search
-      
-      // Production Companies
-      productionCompanies: [
-        {
-          name: String,
-          logo: String,           // Logo URL from TMDB
-        }
-      ],
-
-      // Advanced Cast List (With Bios and Roles)
-      cast: [
-        {
-          name: String,
-          character: String,
-          profileImage: String,
-          biography: String,      // Actor Bios
-        }
-      ],
-
-      // Advanced Crew List
-      crew: [
-        {
-          name: String,
-          job: String,            // e.g., "Director", "Producer"
-          profileImage: String,
-        }
-      ],
-
-      // Concert Specific
-      artists: [String],
+      // Concert Specific Extensions
+      artists: [String],          // Full lineup/supporting acts
       discography: [
         {
           title: String,
@@ -74,11 +38,44 @@ const EventSchema = new mongoose.Schema(
         },
       ],
 
+      // General TMDB/Theatrical Extensions
+      status: String, 
+      runtime: Number,
+      budget: Number,
+      revenue: Number,
+      genres: [String],
+      releaseDate: Date,
+      contentRating: String,
+      keywords: [String],
+      
+      productionCompanies: [
+        {
+          name: String,
+          logo: String,
+        }
+      ],
+
+      cast: [
+        {
+          name: String,
+          character: String,
+          profileImage: String,
+          biography: String,
+        }
+      ],
+
+      crew: [
+        {
+          name: String,
+          job: String,
+          profileImage: String,
+        }
+      ],
+
       // Sports Specific
       teams: { home: String, away: String },
       league: String,
       
-      // Keep legacy fields for backward compatibility if needed
       director: String, 
     },
 
