@@ -1,22 +1,25 @@
+// frontend/src/services/eventService.js
 import apiClient from '@/lib/axios';
-import { MOCK_EVENTS } from '@/data/mockdata'; // Ensure filename matches exactly
-
-const fetchWithFallback = async (endpoint, mockKey) => {
-  try {
-    const { data } = await apiClient.get(endpoint);
-    // If backend returns valid array, use it. Otherwise, fallback to mock.
-    if (data && Array.isArray(data) && data.length > 0) return data;
-    return MOCK_EVENTS[mockKey] || [];
-  } catch (error) {
-    console.warn(`Fetch failed for ${endpoint}, using mock data.`);
-    return MOCK_EVENTS[mockKey] || [];
-  }
-};
 
 export const eventService = {
-  getFeatured: () => fetchWithFallback('/events/featured', 'featured'),
-  getMovies: () => fetchWithFallback('/events/movies', 'movies'),
-  getTheatre: () => fetchWithFallback('/events/theatre', 'theatre'),
-  getConcerts: () => fetchWithFallback('/events/concerts', 'concerts'),
-  getSports: () => fetchWithFallback('/events/sports', 'sports'),
+  getFeatured: async () => {
+    const { data } = await apiClient.get('/events?isFeatured=true');
+    return data; // Your controller now returns the array directly
+  },
+  getMovies: async () => {
+    const { data } = await apiClient.get('/events?category=movie');
+    return data;
+  },
+  getTheatre: async () => {
+    const { data } = await apiClient.get('/events?category=theatre');
+    return data;
+  },
+  getConcerts: async () => {
+    const { data } = await apiClient.get('/events?category=concert');
+    return data;
+  },
+  getSports: async () => {
+    const { data } = await apiClient.get('/events?category=sports');
+    return data;
+  },
 };

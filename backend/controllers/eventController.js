@@ -106,13 +106,28 @@ const enrichEventBackground = async (eventId, title, category, artistName) => {
 };
 
 
-// @desc    Get all events
+
+// @desc    Get all events (with optional filtering)
 // @route   GET /api/events
 // @access  Public
 
+
 exports.getAllEvents = async (req, res) => {
   try {
-    const events = await Event.find().populate("seller", "name email");
+    const { category, isFeatured } = req.query;
+    let query = {};
+
+    // Filter by category if provided in the URL (e.g., ?category=movie)
+    if (category) {
+      query.category = category;
+    }
+
+    // Filter by featured status if provided (e.g., ?isFeatured=true)
+    if (isFeatured) {
+      query.isFeatured = isFeatured === 'true';
+    }
+
+    const events = await Event.find(query).populate("seller", "name email");
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -208,3 +223,4 @@ exports.searchEvents = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+

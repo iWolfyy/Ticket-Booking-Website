@@ -16,29 +16,31 @@ import { MapPin } from 'lucide-react'
 const TicketCard = ({ event, aspectRatio }) => {
   const [isLoaded, setIsLoaded] = useState(false)
 
-  // Determine the correct image source
-  const imageSrc = (event.category === 'concert' && event.bannerImage) 
+  // 1. Determine the raw image source
+  const rawImageSrc = (event.category === 'concert' && event.bannerImage) 
     ? event.bannerImage 
     : (event.posterImage || event.bannerImage);
 
+  // 2. Create a stable versioned URL to fix flickering and CORS issues
+  const stableSrc = rawImageSrc ? `${rawImageSrc}?v=${event._id}` : null;
+
   return (
     <div className="h-full">
-      {/* 1. HIDDEN PRELOADER: Triggers the switch when image is ready */}
-      <img 
-        src={imageSrc}
-        alt="preload"
-        className="hidden"
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setIsLoaded(true)} // Fail-safe: show content even if image breaks
-      />
+      {/* 3. HIDDEN PRELOADER: Only renders if a valid source exists */}
+      {stableSrc && (
+        <img 
+          src={stableSrc}
+          alt="preload"
+          className="hidden"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setIsLoaded(true)} // Fail-safe: show content even if image breaks
+        />
+      )}
 
-      {/* 2. SKELETON STATE: Shows immediately (No blur, no delay) */}
-      {!isLoaded && (
+      {/* 4. SKELETON STATE: Shows while loading or if no source exists */}
+      {(!isLoaded || !stableSrc) && (
         <div className="h-full rounded-xl p-2 space-y-3">
-          {/* Matches the Image Aspect Ratio */}
           <Skeleton className={`w-full ${aspectRatio} rounded-lg`} />
-          
-          {/* Matches the Text Content */}
           <div className="space-y-2 px-1">
             <Skeleton className="h-4 w-3/4" />   {/* Title */}
             <Skeleton className="h-3 w-1/2" />   {/* Venue */}
@@ -49,16 +51,20 @@ const TicketCard = ({ event, aspectRatio }) => {
         </div>
       )}
 
-      {/* 3. REVEAL STATE: Blurs in ONLY after image is loaded */}
-      {isLoaded && (
+      {/* 5. REVEAL STATE: Rendered only if source exists and is loaded */}
+      {stableSrc && isLoaded && (
         <BlurFade duration={0.4} inView className="h-full">
            <Card className="h-full border-0 bg-transparent hover:bg-zinc-100 dark:hover:bg-accent/50 shadow-none group cursor-pointer transition-colors duration-300 rounded-xl p-2">
              
              <div className={`relative ${aspectRatio} rounded-lg overflow-hidden mb-2 bg-muted shadow-sm`}>
                 <img 
-                  src={imageSrc} 
+                  src={stableSrc} 
                   alt={event.title}
                   className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = "https://images.unsplash.com/photo-1540039155733-5bb30b7568ed?q=80&w=1000"; // Generic event fallback
+                  }}
                 />
                 <div className="absolute top-2 right-2 z-10">
                    <Badge className="bg-black/80 hover:bg-black uppercase text-[10px] px-2 h-5 border-none text-white tracking-wide shadow-sm">
@@ -102,7 +108,6 @@ const TicketCarousel = ({
       <CarouselContent className="-ml-4 pb-4">
         {data.map((event, index) => (
           <CarouselItem key={event._id || index} className={`pl-4 ${className}`}>
-             {/* Render the smart card directly */}
              <TicketCard event={event} aspectRatio={aspectRatio} />
           </CarouselItem>
         ))}

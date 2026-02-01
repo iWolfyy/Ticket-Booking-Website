@@ -15,8 +15,9 @@ export const useEvents = (category = null) => {
           ? `${baseUrl}?category=${category}` 
           : `${baseUrl}/featured`;
 
-        // const { data } = await axios.get(url);
-        // setEvents(data);
+        const { data } = await axios.get(url);
+        setEvents(data);
+        setLoading(false);
 
         // Simulated delay
         setTimeout(() => {

@@ -69,7 +69,7 @@ export default function Navbar() {
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg transition-all">
               <Hexagon size={18} fill="currentColor" />
             </div>
-            <Link to="/" span className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</Link>
+            <Link to="/" className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</Link>
           </div>
         </div>
 
