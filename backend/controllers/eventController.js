@@ -5,105 +5,145 @@ const { fetchArtistDetails } = require("../utils/musicHandler");
 // @desc    Create a new event
 // @route   POST /api/events
 // @access  Private (Seller/Admin)
+/* ======================================================
+   CREATE EVENT
+====================================================== */
 exports.createEvent = async (req, res) => {
   try {
-    const { title, category, artistName } = req.body;
+    let { title, category, artistName } = req.body;
 
-    // 1. Immediate Duplication Check
-    const eventExists = await Event.findOne({
-      title: { $regex: new RegExp(`^${title}$`, "i") },
-      seller: req.user._id,
-    });
-    if (eventExists)
-      return res.status(400).json({ message: "Event already exists" });
+    if (!title || !category) {
+      return res.status(400).json({ message: "Title and category are required" });
+    }
 
-    // 2. Immediate Creation (Fast response)
+    category = category.toLowerCase();
+
+    if (category === "concert" && !artistName) {
+      return res
+        .status(400)
+        .json({ message: "artistName is required for concerts" });
+    }
+
+    // Create event immediately
     const event = await Event.create({
       ...req.body,
+      title,
+      category,
       bannerImage: req.file ? req.file.path : "",
       seller: req.user._id,
-      status: category === "movie" ? "enriching" : "published", // Optional status flag
+      status: category === "movie" || category === "concert"
+        ? "enriching"
+        : "published",
     });
 
-    // 3. Fire and Forget: Background Enrichment
-    // We don't use 'await' here so the response sends immediately
-    if (category === "movie") {
-      enrichEventBackground(event._id, title, category, artistName);
-    } else if (category === "concert") {
-      enrichEventBackground(event._id, title, category, artistName);
+    // 🔥 Fire-and-forget enrichment (CRITICAL)
+    if (category === "movie" || category === "concert") {
+      setImmediate(() => {
+        enrichEventBackground(
+          event._id,
+          title,
+          category,
+          artistName
+        );
+      });
     }
 
     res.status(201).json(event);
   } catch (error) {
+    console.error("Create Event Error:", error.message);
+
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "Event already exists" });
+    }
+
     res.status(500).json({ message: error.message });
   }
 };
 
-
+/* ======================================================
+   BACKGROUND ENRICHMENT
+====================================================== */
 const enrichEventBackground = async (eventId, title, category, artistName) => {
   try {
+    console.log("🚀 Enrichment started:", { title, category, artistName });
+
     let updateData = {};
 
+    /* ================= MOVIE ================= */
     if (category === "movie") {
-      const tmdbData = await fetchMovieFromTMDB(title); 
-      if (tmdbData) {
-        updateData = {
-          tmdbId: tmdbData.id,
-          rating: tmdbData.vote_average,
-          description: tmdbData.overview,
-          posterImage: tmdbData.poster_path ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}` : "",
-          bannerImage: tmdbData.backdrop_path ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}` : "",
-          "metadata.status": tmdbData.status,
-          "metadata.runtime": tmdbData.runtime,
-          "metadata.budget": tmdbData.budget,
-          "metadata.revenue": tmdbData.revenue,
-          "metadata.genres": tmdbData.genres?.map(g => g.name) || [],
-          "metadata.releaseDate": tmdbData.release_date,
-          "metadata.keywords": tmdbData.keywords?.keywords?.map(k => k.name) || [],
-          "metadata.productionCompanies": tmdbData.production_companies?.map(pc => ({
-            name: pc.name,
-            logo: pc.logo_path ? `https://image.tmdb.org/t/p/w200${pc.logo_path}` : ""
-          })) || [],
-          "metadata.cast": tmdbData.credits?.cast?.slice(0, 10).map((c) => ({
+      const tmdbData = await fetchMovieFromTMDB(title);
+      if (!tmdbData) throw new Error("TMDB returned no data");
+
+      updateData = {
+        tmdbId: tmdbData.id,
+        rating: tmdbData.vote_average || null,
+        description: tmdbData.overview || "",
+        posterImage: tmdbData.poster_path
+          ? `https://image.tmdb.org/t/p/w500${tmdbData.poster_path}`
+          : "",
+        bannerImage: tmdbData.backdrop_path
+          ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}`
+          : "",
+        "metadata.status": tmdbData.status,
+        "metadata.runtime": tmdbData.runtime,
+        "metadata.budget": tmdbData.budget,
+        "metadata.revenue": tmdbData.revenue,
+        "metadata.genres": tmdbData.genres?.map(g => g.name) || [],
+        "metadata.releaseDate": tmdbData.release_date,
+        "metadata.cast":
+          tmdbData.credits?.cast?.slice(0, 10).map(c => ({
             name: c.name,
             character: c.character,
-            profileImage: c.profile_path ? `https://image.tmdb.org/t/p/w185${c.profile_path}` : ""
+            profileImage: c.profile_path
+              ? `https://image.tmdb.org/t/p/w185${c.profile_path}`
+              : ""
           })) || [],
-          "metadata.director": tmdbData.credits?.crew?.find((p) => p.job === "Director")?.name || "",
-        };
-      }
-    } 
-    
+        "metadata.director":
+          tmdbData.credits?.crew?.find(p => p.job === "Director")?.name || "",
+        status: "published"
+      };
+
+      console.log("🎬 TMDB fetched:", tmdbData.id);
+    }
+
+    /* ================= CONCERT ================= */
     else if (category === "concert") {
       const data = await fetchArtistDetails(artistName);
+      if (!data) throw new Error("Artist API returned no data");
 
-      // FIXED: Added check for 'data' and 'discography' to prevent 'undefined' crash
-      if (data && data.discography) {
-        updateData = {
-          description: data.description || "",
-          artistImage: data.bannerImage || "",
-          artistLogo: data.artistLogo || "",
-          // Use optional chaining for each album in the array
-          "metadata.discography": data.discography.map(album => ({
+      updateData = {
+        description: data.description || "",
+        artistImage: data.bannerImage || "",
+        "metadata.discography":
+          data.discography?.map(album => ({
             title: album?.title || "Unknown Album",
             year: album?.year || "N/A",
             image: album?.image || ""
-          })),
-          "metadata.featuringArtists": [], 
-        };
-      } else {
-        console.warn(`Sync Warning: No music data found for "${artistName}"`);
-      }
+          })) || [],
+        status: "published"
+      };
+
+      console.log("🎤 Artist data fetched:", artistName);
     }
 
-    if (Object.keys(updateData).length > 0) {
-      await Event.findByIdAndUpdate(eventId, { $set: updateData });
-      console.log(`Sync Complete: ${title}`);
-    }
+    if (!Object.keys(updateData).length) return;
+
+    await Event.findByIdAndUpdate(eventId, {
+      $set: updateData,
+      $unset: { "metadata.syncError": "" }
+    });
+
+    console.log(`✅ Enrichment complete: ${title}`);
   } catch (err) {
-    console.error("Sync Failed:", err.message);
+    console.error(`❌ Enrichment failed (${title}):`, err.message);
+
+    await Event.findByIdAndUpdate(eventId, {
+      status: "failed",
+      "metadata.syncError": err.message
+    });
   }
 };
+
 
 
 
