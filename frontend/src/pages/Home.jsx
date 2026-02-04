@@ -18,6 +18,27 @@ import {
 
 const TicketCarousel = lazy(() => import('@/components/TicketCarousel'));
 
+const CarouselSkeleton = ({ className, aspectRatio }) => (
+  <div className="w-full max-w-6xl mx-auto px-8 overflow-hidden">
+    <div className="flex -ml-4">
+      {[...Array(6)].map((_, i) => (
+        <div key={i} className={`pl-4 shrink-0 ${className}`}>
+          <div className="h-full rounded-xl p-2 space-y-3">
+            <Skeleton className={`w-full ${aspectRatio} rounded-lg`} />
+            <div className="space-y-2 px-1">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <div className="pt-1">
+                 <Skeleton className="h-3 w-1/3" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
 export default function Home() {
   const [currentPage, setCurrentPage] = useState(1);
   const scrollRef = useRef(null); // Reference to scroll back to
@@ -69,7 +90,7 @@ export default function Home() {
             key={sec.title} 
             title={sec.title} 
             loading={sec.loading} 
-            fallback={<Skeleton className="h-64 w-full rounded-xl" />}
+            fallback={<CarouselSkeleton className={sec.cls} aspectRatio={sec.aspect} />}
           >
             <TicketCarousel data={sec.data} className={sec.cls} aspectRatio={sec.aspect} />
           </SectionLoader>
