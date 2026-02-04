@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { 
-  Bell, 
   Search, 
   Hexagon, 
   Clapperboard, 
   Trophy, 
   Drama, 
   Guitar,
-  LogOut
+  LogOut,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,10 +17,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext"; //
+import { useAuth } from "@/contexts/AuthContext";
+import NotificationCenter from "./NotificationCenter";
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth(); //
+  const { user, logout, isAuthenticated } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true); 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -94,28 +95,27 @@ export default function Navbar() {
           
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="icon" className="relative group hover:bg-accent/50 rounded-full hidden sm:flex">
-                <Bell size={20} className="text-muted-foreground transition-colors group-hover:text-foreground" />
-                <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-destructive border-2 border-background animate-pulse"></span>
-              </Button>
+              {/* Fluid Notification Center Dropdown */}
+              <NotificationCenter />
               
               <div className="hidden lg:flex flex-col items-end mr-1">
                 <p className="text-xs font-bold leading-none">{user?.name}</p>
                 <p className="text-[9px] uppercase tracking-tighter text-muted-foreground">{user?.role}</p>
               </div>
 
-              <Avatar className="h-8 w-8 border border-border/50 transition-all cursor-pointer">
-                {/* Priority 1: User's actual profile pic from DB/Cloudinary */}
-                {/* Priority 2: Fallback to DiceBear initials if no pic exists */}
-                <AvatarImage 
-                  src={user?.profilepic || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} 
-                  alt={user?.name}
-                  className="object-cover"
-                />
-                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-              </Avatar>
+              {/* Avatar linked to Settings */}
+              <Link to="/settings">
+                <Avatar className="h-8 w-8 border border-border/50 transition-all cursor-pointer hover:ring-2 hover:ring-primary/20">
+                  <AvatarImage 
+                    src={user?.profilepic || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} 
+                    alt={user?.name}
+                    className="object-cover"
+                  />
+                  <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                </Avatar>
+              </Link>
 
-              <Button variant="ghost" size="icon" onClick={logout} className="rounded-full hover:text-destructive">
+              <Button variant="ghost" size="icon" onClick={logout} className="rounded-full hover:text-destructive transition-colors">
                 <LogOut size={18} />
               </Button>
             </div>
@@ -124,7 +124,7 @@ export default function Navbar() {
               <Button variant="ghost" size="sm" asChild>
                 <Link to="/login">Login</Link>
               </Button>
-              <Button size="sm" asChild className="rounded-full">
+              <Button size="sm" asChild className="rounded-full shadow-lg shadow-primary/20">
                 <Link to="/register">Sign Up</Link>
               </Button>
             </div>
@@ -146,7 +146,7 @@ export default function Navbar() {
              <Link
                key={link.label}
                to={link.to || "#"}
-               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-xs font-medium whitespace-nowrap"
+               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-xs font-medium whitespace-nowrap shadow-sm active:scale-95 transition-transform"
              >
                <link.icon size={14} />
                {link.label}
@@ -154,7 +154,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        {/* The links that disappeared */}
+        {/* Desktop Lower Links */}
         <nav className="hidden md:flex items-center space-x-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
           {["Projects", "Sales", "Team", "Tasks", "Blog"].map((item) => (
             <a key={item} href="#" className="hover:text-foreground transition-colors duration-200">{item}</a>
@@ -172,10 +172,10 @@ export default function Navbar() {
               placeholder="Search everything..." 
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="h-8 text-xs bg-muted/50 border-border/50 transition-all focus:bg-background" 
+              className="h-8 text-xs bg-muted/50 border-border/50 transition-all focus:bg-background focus:border-primary/40 focus-visible:ring-0" 
             />
           </div>
-          <Button size="icon" className="h-8 w-8 rounded-md bg-foreground text-background hover:bg-foreground/90">
+          <Button size="icon" className="h-8 w-8 rounded-md bg-foreground text-background hover:bg-foreground/90 transition-all">
             <Search size={14} />
           </Button>
         </div>
