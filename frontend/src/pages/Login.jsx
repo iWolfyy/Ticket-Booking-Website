@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import apiClient from "@/lib/axios";
 
 // UI Components
 import { Button } from "@/components/ui/button";
@@ -35,15 +36,25 @@ export default function Login() {
   const row1 = [...MOCK_EVENTS.movies.slice(0, 6)];
   const row2 = [...MOCK_EVENTS.concerts.slice(0, 6)];
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => {
-      login({ name: "User", email });
+
+    try {
+      // Now 'await' will work correctly here
+      const response = await apiClient.post('/auth/login', { email, password });
+      
+      // The backend returns { _id, name, email, role, token }
+      login(response.data);
+      
       toast.success("Successfully logged in");
       navigate("/");
+    } catch (error) {
+      const message = error.response?.data?.message || "Login failed";
+      toast.error(message);
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
 
   return (

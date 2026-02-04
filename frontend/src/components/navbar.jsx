@@ -6,7 +6,8 @@ import {
   Clapperboard, 
   Trophy, 
   Drama, 
-  Guitar 
+  Guitar,
+  LogOut
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,10 +15,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar"; 
 import { cn } from "@/lib/utils";
-import { ModeToggle } from "@/components/mode-toggle"; // REVERTED IMPORT
+import { ModeToggle } from "@/components/mode-toggle";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext"; //
 
 export default function Navbar() {
+  const { user, logout, isAuthenticated } = useAuth(); //
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true); 
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -29,14 +32,11 @@ export default function Navbar() {
       const currentScrollY = window.scrollY;
       setIsScrolled(currentScrollY > 10);
 
-      if (currentScrollY < 10) {
-        setIsVisible(true);
-      } else if (currentScrollY < lastScrollY.current) {
+      if (currentScrollY < 10 || currentScrollY < lastScrollY.current) {
         setIsVisible(true);
       } else if (currentScrollY > lastScrollY.current) {
         setIsVisible(false);
       }
-
       lastScrollY.current = currentScrollY;
     };
 
@@ -45,10 +45,10 @@ export default function Navbar() {
   }, []);
 
   const navLinks = [
-    { label: "Movies", icon: Clapperboard },
-    { label: "Concerts", icon: Guitar },
-    { label: "Sports", icon: Trophy },
-    { label: "Theatre", icon: Drama },
+    { label: "Movies", icon: Clapperboard, to: "/movies" },
+    { label: "Concerts", icon: Guitar, to: "/concerts" },
+    { label: "Sports", icon: Trophy, to: "/sports" },
+    { label: "Theatre", icon: Drama, to: "/theatre" },
   ];
 
   return (
@@ -60,51 +60,73 @@ export default function Navbar() {
           : "bg-background border-border"
       )}
     >
+      {/* TOP SECTION */}
       <div className="grid grid-cols-[auto_1fr_auto] md:grid-cols-[1fr_auto_1fr] h-16 items-center px-4 md:px-8 gap-4">
         
         <div className="flex items-center gap-3 md:gap-4 justify-self-start">
           <SidebarTrigger className="hover:bg-accent/50 transition-colors" />
           <Separator orientation="vertical" className="h-6 hidden sm:block" />
-          <div className="flex items-center gap-2 group cursor-pointer">
+          <Link to="/" className="flex items-center gap-2 group cursor-pointer">
             <div className="bg-primary text-primary-foreground p-1.5 rounded-lg transition-all">
               <Hexagon size={18} fill="currentColor" />
             </div>
-            <Link to="/" className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</Link>
-          </div>
+            <span className="hidden lg:inline-block font-bold tracking-tight text-lg">Ticket Ready</span>
+          </Link>
         </div>
 
         <nav className="hidden md:flex items-center justify-center">
           <div className="grid grid-cols-4 gap-4">
             {navLinks.map((link) => (
-              <a 
+              <Link 
                 key={link.label}
-                href="#" 
+                to={link.to || "#"} 
                 className="group flex items-center justify-center gap-2.5 px-4 py-2 w-28 lg:w-32 text-sm font-medium text-muted-foreground transition-all hover:text-foreground hover:bg-accent/50 rounded-md"
               >
                 <link.icon size={16} className="opacity-70 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                 <span>{link.label}</span>
-              </a>
+              </Link>
             ))}
           </div>
         </nav>
 
         <div className="flex items-center justify-end space-x-2 md:space-x-4 justify-self-end">
-          
-          {/* REVERTED: Using the standard ModeToggle */}
           <ModeToggle />
           
-          <Button variant="ghost" size="icon" className="relative group hover:bg-accent/50 rounded-full hidden sm:flex">
-            <Bell size={20} className="text-muted-foreground transition-colors group-hover:text-foreground" />
-            <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-destructive border-2 border-background animate-pulse"></span>
-          </Button>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" size="icon" className="relative group hover:bg-accent/50 rounded-full hidden sm:flex">
+                <Bell size={20} className="text-muted-foreground transition-colors group-hover:text-foreground" />
+                <span className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-destructive border-2 border-background animate-pulse"></span>
+              </Button>
+              
+              <div className="hidden lg:flex flex-col items-end mr-1">
+                <p className="text-xs font-bold leading-none">{user?.name}</p>
+                <p className="text-[9px] uppercase tracking-tighter text-muted-foreground">{user?.role}</p>
+              </div>
 
-          <Avatar className="h-8 w-8 md:h-9 md:w-9 border border-border/50 transition-all cursor-pointer">
-            <AvatarImage src="https://github.com/shadcn.png" />
-            <AvatarFallback>CN</AvatarFallback>
-          </Avatar>
+              <Avatar className="h-8 w-8 border border-border/50">
+                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} />
+                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+
+              <Button variant="ghost" size="icon" onClick={logout} className="rounded-full hover:text-destructive">
+                <LogOut size={18} />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button size="sm" asChild className="rounded-full">
+                <Link to="/register">Sign Up</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
+      {/* BOTTOM SECTION - Separator and Links */}
       {(isVisible || !isScrolled) && <Separator />}
 
       <div className={cn(
@@ -112,24 +134,28 @@ export default function Navbar() {
         !isVisible ? "h-0 opacity-0 pointer-events-none" : "h-14 md:h-12 bg-muted/30 opacity-100"
       )}>
         
-        <div className="md:hidden flex items-center gap-3 overflow-x-auto no-scrollbar w-full pr-4 py-2 mask-linear-fade">
+        {/* Mobile Nav Scroller */}
+        <div className="md:hidden flex items-center gap-3 overflow-x-auto no-scrollbar w-full pr-4 py-2">
           {navLinks.map((link) => (
-             <button
+             <Link
                key={link.label}
-               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-xs font-medium whitespace-nowrap shadow-sm active:scale-95 transition-transform"
+               to={link.to || "#"}
+               className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-background border border-border text-xs font-medium whitespace-nowrap"
              >
                <link.icon size={14} />
                {link.label}
-             </button>
+             </Link>
           ))}
         </div>
 
+        {/* The links that disappeared */}
         <nav className="hidden md:flex items-center space-x-6 text-[10px] font-bold uppercase tracking-widest text-muted-foreground/80">
           {["Projects", "Sales", "Team", "Tasks", "Blog"].map((item) => (
             <a key={item} href="#" className="hover:text-foreground transition-colors duration-200">{item}</a>
           ))}
         </nav>
 
+        {/* Search Bar */}
         <div className="hidden md:flex ml-auto items-center gap-3">
           <div className={cn(
             "relative transition-all duration-500 ease-in-out",
@@ -140,7 +166,7 @@ export default function Navbar() {
               placeholder="Search everything..." 
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="h-8 text-xs bg-muted/50 border-border/50 transition-all focus:bg-background focus:border-primary/50" 
+              className="h-8 text-xs bg-muted/50 border-border/50 transition-all focus:bg-background" 
             />
           </div>
           <Button size="icon" className="h-8 w-8 rounded-md bg-foreground text-background hover:bg-foreground/90">
