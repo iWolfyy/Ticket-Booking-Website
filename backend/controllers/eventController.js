@@ -84,6 +84,17 @@ const enrichEventBackground = async (eventId, title, category, artistName) => {
         bannerImage: tmdbData.backdrop_path
           ? `https://image.tmdb.org/t/p/w1280${tmdbData.backdrop_path}`
           : "",
+
+        "metadata.productionCompanies": tmdbData.production_companies?.map(co => ({
+        name: co.name,
+        logo: co.logo_path ? `https://image.tmdb.org/t/p/w200${co.logo_path}` : ""
+        })) || [],
+
+        trailerUrl: tmdbData.videos?.results?.find(v => v.type === "Trailer" && v.site === "YouTube")
+        ? `https://www.youtube.com/watch?v=${tmdbData.videos.results.find(v => v.type === "Trailer").key}`
+        : "",
+
+        
         "metadata.status": tmdbData.status,
         "metadata.runtime": tmdbData.runtime,
         "metadata.budget": tmdbData.budget,
@@ -170,6 +181,26 @@ exports.getAllEvents = async (req, res) => {
     const events = await Event.find(query).populate("seller", "name email");
     res.json(events);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// @desc    Get single event
+// @route   GET /api/events/:id
+// @access  Public
+exports.getEventById = async (req, res) => {
+  try {
+    const event = await Event.findById(req.params.id).populate("seller", "name email");
+
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.json(event);
+  } catch (error) {
+    if (error.kind === 'ObjectId') {
+        return res.status(404).json({ message: "Event not found" });
+    }
     res.status(500).json({ message: error.message });
   }
 };

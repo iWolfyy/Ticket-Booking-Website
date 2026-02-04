@@ -22,4 +22,8 @@ export const eventService = {
     const { data } = await apiClient.get('/events?category=sports');
     return data;
   },
+  getEventById: async (id) => {
+    const { data } = await apiClient.get(`/events/${id}`);
+    return data;
+  },
 };

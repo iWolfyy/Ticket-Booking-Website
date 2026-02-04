@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { 
   LucideTrophy, 
@@ -17,8 +17,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { cn } from "@/lib/utils";
+import { eventService } from "@/services/eventService";
 
-import { MOCK_EVENTS } from "@/data/mockdata";
+
 
 export default function SportsDetail() {
   const { id } = useParams();
@@ -27,10 +28,27 @@ export default function SportsDetail() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
 
-  const allEvents = Object.values(MOCK_EVENTS).flat();
-  const event = allEvents.find((e) => e._id === id);
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!event) return <div className="p-20 text-center font-black italic uppercase">Event Not Found</div>;
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const data = await eventService.getEventById(id);
+        setEvent(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvent();
+  }, [id]);
+
+  if (loading) return <div className="p-20 text-center font-black italic uppercase">Loading...</div>;
+  if (error || !event) return <div className="p-20 text-center font-black italic uppercase">Event Not Found</div>;
 
   const venues = [
     { id: "v1", name: "R. Premadasa Stadium", city: "Colombo" },
