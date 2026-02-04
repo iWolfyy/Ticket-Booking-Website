@@ -104,9 +104,15 @@ export default function Navbar() {
                 <p className="text-[9px] uppercase tracking-tighter text-muted-foreground">{user?.role}</p>
               </div>
 
-              <Avatar className="h-8 w-8 border border-border/50">
-                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} />
-                <AvatarFallback>{user?.name?.charAt(0)}</AvatarFallback>
+              <Avatar className="h-8 w-8 border border-border/50 transition-all cursor-pointer">
+                {/* Priority 1: User's actual profile pic from DB/Cloudinary */}
+                {/* Priority 2: Fallback to DiceBear initials if no pic exists */}
+                <AvatarImage 
+                  src={user?.profilepic || `https://api.dicebear.com/7.x/initials/svg?seed=${user?.name}`} 
+                  alt={user?.name}
+                  className="object-cover"
+                />
+                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
               </Avatar>
 
               <Button variant="ghost" size="icon" onClick={logout} className="rounded-full hover:text-destructive">

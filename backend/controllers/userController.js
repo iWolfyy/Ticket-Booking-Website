@@ -29,22 +29,28 @@ exports.getUser = async (req, res) => {
 
 // Update user profile
 // PUT /api/users/profile
-exports.updateUser = async (req,res) => {
+exports.updateUser = async (req, res) => {
     try {
-        //Prevent from updating someone else profile
-        //Unless they are admin
         if (req.user._id.toString() !== req.params.id && req.user.role !== 'admin') {
             return res.status(401).json({ message: "Unauthorized" });
         }
 
+        // Create an update object from the body
+        let updateData = { ...req.body };
+
+        // If a file was uploaded, Multer-Cloudinary puts the URL in req.file.path
+        if (req.file) {
+            updateData.profilepic = req.file.path;
+        }
+
         const updatedUser = await User.findByIdAndUpdate(
             req.params.id,
-            { $set: req.body },
+            { $set: updateData },
             { new: true, runValidators: true }
         ).select('-password');
 
         res.status(200).json(updatedUser);
     } catch (error) {
-        res.status(500).json({ message: "Error updating user", error });
+        res.status(500).json({ message: "Error updating user", error: error.message });
     }
 };

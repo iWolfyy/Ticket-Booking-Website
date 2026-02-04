@@ -1,35 +1,87 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
-import { LucideUser, LucideSettings, LucideBell, LucideShield, LucideTicket, LucideCamera, LucideTrendingUp, LucideCalendar, LucideCreditCard, LucideStar } from "lucide-react";
-
-// shadcn UI
+import { 
+  LucideUser, LucideBell, LucideShield, LucideTicket, 
+  LucideCamera, LucideTrendingUp, LucideCalendar, 
+  LucideCreditCard, LucideStar 
+} from "lucide-react";
+import apiClient from "@/lib/axios";
+import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { RainbowButton } from "@/components/ui/rainbow-button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-// Magic UI for aesthetics
 import { BlurFade } from "@/components/ui/blur-fade";
 
 export default function Settings() {
-  const [profileImage, setProfileImage] = useState("https://github.com/shadcn.png");
+  const { user, login } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null); // To store the actual file
+  
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    profilepic: ""
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        profilepic: user.profilepic || "https://github.com/shadcn.png"
+      });
+    }
+  }, [user]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        return toast.error("File is too large. Max size is 2MB.");
+      }
+      setSelectedFile(file); // Set file for upload
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        setProfileImage(reader.result);
-        toast.success("Profile picture updated preview");
+        setFormData(prev => ({ ...prev, profilepic: reader.result })); // Preview locally
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSave = () => {
-    toast.success("Settings updated successfully");
+  const handleSave = async () => {
+    if (!user?._id && !user?.id) return toast.error("User session not found");
+    
+    setLoading(true);
+    try {
+      const userId = user._id || user.id;
+      
+      // Use FormData for file uploads
+      const data = new FormData();
+      data.append("name", formData.name);
+      data.append("email", formData.email);
+      
+      if (selectedFile) {
+        data.append("profilepic", selectedFile);
+      }
+
+      const response = await apiClient.put(`/users/profile/${userId}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      
+      login({ ...user, ...response.data });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      const message = error.response?.data?.message || "Error updating settings";
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -43,7 +95,6 @@ export default function Settings() {
         </div>
       </BlurFade>
 
-      {/* BENTO GRID STATISTICS */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatsCard delay={0.2} title="Total Bookings" value="12" icon={<LucideTicket />} trend="+2 this month" />
         <StatsCard delay={0.25} title="Upcoming Events" value="3" icon={<LucideCalendar />} />
@@ -52,10 +103,9 @@ export default function Settings() {
       </div>
 
       <div className="grid gap-8 md:grid-cols-[200px_1fr] lg:grid-cols-[250px_1fr]">
-        {/* SIDE NAVIGATION */}
         <BlurFade delay={0.4} direction="right">
           <nav className="flex flex-col space-y-1">
-            <button className="flex items-center gap-3 rounded-lg bg-zinc-100 px-3 py-2 text-zinc-900 transition-all dark:bg-zinc-800 dark:text-zinc-50">
+            <button className="flex items-center gap-3 rounded-lg bg-zinc-100 px-3 py-2 text-zinc-900 transition-all dark:bg-zinc-800 dark:text-zinc-50 font-medium">
               <LucideUser className="h-4 w-4" /> Profile
             </button>
             <button className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary">
@@ -67,33 +117,26 @@ export default function Settings() {
           </nav>
         </BlurFade>
 
-        {/* MAIN CONTENT AREA */}
         <div className="space-y-6">
           <BlurFade delay={0.5}>
             <Card className="border-muted/50 bg-card shadow-lg">
               <CardHeader>
                 <CardTitle>Public Profile</CardTitle>
-                <CardDescription>Update your personal information and profile picture.</CardDescription>
+                <CardDescription>Update your information and picture.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                
-                {/* PROFILE PICTURE SECTION */}
                 <div className="flex flex-col gap-4">
                   <Label className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Profile Picture</Label>
                   <div className="flex items-center gap-6">
                     <div className="relative group cursor-pointer">
                       <Avatar className="h-24 w-24 border-2 border-primary/20 transition-all group-hover:opacity-80">
-                        <AvatarImage src={profileImage} alt="Profile" />
-                        <AvatarFallback>PW</AvatarFallback>
+                        <AvatarImage src={formData.profilepic} alt="Profile" />
+                        <AvatarFallback>{formData.name?.charAt(0) || "U"}</AvatarFallback>
                       </Avatar>
-                      <label htmlFor="picture-upload" className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <label htmlFor="picture-upload" className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                         <LucideCamera className="text-white h-8 w-8 drop-shadow-md" />
                       </label>
                       <input id="picture-upload" type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                    </div>
-                    <div className="space-y-1">
-                      <h4 className="text-sm font-medium">Change Photo</h4>
-                      <p className="text-xs text-muted-foreground">JPG, GIF or PNG. Max size of 2MB.</p>
                     </div>
                   </div>
                 </div>
@@ -102,17 +145,28 @@ export default function Settings() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div className="grid gap-2">
-                    <Label htmlFor="username" className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Username</Label>
-                    <Input id="username" defaultValue="Pavithra" className="bg-muted/40 border-none h-9 text-sm" />
+                    <Label htmlFor="username">Username</Label>
+                    <Input 
+                      id="username" 
+                      value={formData.name} 
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="bg-muted/40 border-none h-9 text-sm" 
+                    />
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="email" className="text-[10px] uppercase tracking-wider opacity-60 font-bold">Email Address</Label>
-                    <Input id="email" placeholder="wadptw@gmail.com" className="bg-muted/40 border-none h-9 text-sm" />
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email"
+                      value={formData.email} 
+                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                      className="bg-muted/40 border-none h-9 text-sm" 
+                    />
                   </div>
                 </div>
 
-                <RainbowButton onClick={handleSave} className="h-9 text-xs font-bold px-8">
-                  Save Profile Changes
+                <RainbowButton onClick={handleSave} disabled={loading} className="h-9 text-xs font-bold px-8 shadow-md">
+                  {loading ? "Saving..." : "Save Changes"}
                 </RainbowButton>
               </CardContent>
             </Card>
@@ -123,7 +177,6 @@ export default function Settings() {
   );
 }
 
-// Stats Card Component for the Bento Grid
 function StatsCard({ title, value, icon, trend, delay }) {
   return (
     <BlurFade delay={delay}>
