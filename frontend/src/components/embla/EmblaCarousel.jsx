@@ -7,6 +7,7 @@ import { TextAnimate } from "@/components/ui/text-animate"
 import { BlurFade } from "@/components/ui/blur-fade"
 import { Badge } from "@/components/ui/badge"
 import { MapPin, Star, Clapperboard, Music, Trophy, Drama } from 'lucide-react'
+import { Link } from 'react-router-dom'
 
 const TWEEN_FACTOR_BASE = 0.2
 const AUTOPLAY_DELAY = 4000;
@@ -209,10 +210,11 @@ const EmblaCarousel = ({ slides, options }) => {
                              <div className="w-1 h-1 bg-zinc-600 dark:bg-gray-500 rounded-full"></div>
                              <div className="text-green-700 dark:text-green-400 font-bold">from Rs. {slide.basePrice?.toLocaleString()}</div>
                           </div>
-
+                          <Link to={`/${slide.category?.toLowerCase()}/${slide._id}`}>
                           <button className="bg-black text-white hover:bg-zinc-800 dark:bg-white dark:text-black dark:hover:bg-gray-200 px-6 py-2 md:px-8 md:py-3 text-sm md:text-base rounded-full font-bold hover:scale-105 transition-all shadow-lg hover:shadow-xl">
                             Get Tickets
                           </button>
+                          </Link>
                         </div>
                       </div>
                     </div>

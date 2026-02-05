@@ -4,7 +4,7 @@ const { createShow, getEventShows, updateShow, deleteShow, getShowByID } = requi
 const { protect, authorize } = require('../middleware/authMiddleware');
 
 // Create a new show
-router.post('/', protect, authorize('seller', 'admin'), createShow);
+router.post('/', protect, authorize('seller', 'admin', 'eventmanager'), createShow);
 
 // Get Shows for a specific Event
 router.get('/event/:eventId', getEventShows);
@@ -13,9 +13,9 @@ router.get('/event/:eventId', getEventShows);
 router.get('/:id', getShowByID);
 
 // Update Show
-router.put('/:id', protect, authorize('seller', 'admin'), updateShow);
+router.put('/:id', protect, authorize('seller', 'admin', 'eventmanager'), updateShow);
 
 // Delete Show
-router.delete('/:id', protect, authorize('seller', 'admin'), deleteShow);
+router.delete('/:id', protect, authorize('seller', 'admin', 'eventmanager'), deleteShow);
 
 module.exports = router;
