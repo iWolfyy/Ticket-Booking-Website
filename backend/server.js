@@ -6,6 +6,13 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // Your frontend URL
+  credentials: true,               // Required for withCredentials: true
+  methods: ['GET', 'POST', 'PUT', 'DELETE' , 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
 // Load ENV Vars
 dotenv.config();
 
@@ -16,7 +23,7 @@ const app = express();
 
 // Middleware 
 // 1. CORS first
-app.use(cors());
+app.use(cors(corsOptions));
 
 // Webhook Routes
 app.use('/api/webhook', express.raw({ type: 'application/json' }), require('./routes/webhookRoutes'));

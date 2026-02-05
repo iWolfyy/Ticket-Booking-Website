@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 import { 
   Building2, LayoutTemplate, Upload, Plus, Trash2, 
-  ChevronRight, ChevronLeft, Check, ImagePlus, Loader2 
+  ChevronLeft, ImagePlus, Loader2 
 } from 'lucide-react';
+import apiClient from '../lib/axios';
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const STEPS = [
   { id: 1, name: 'Basic Info', icon: Building2 },
@@ -27,7 +28,7 @@ const fadeInVariant = {
   exit: { opacity: 0, x: -20, filter: 'blur(10px)', transition: { duration: 0.3 } }
 };
 
-const CreateVenueForm = () => {
+const CreateVenue = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const progressWidth = ((currentStep - 1) / (STEPS.length - 1)) * 100;
@@ -48,32 +49,34 @@ const CreateVenueForm = () => {
     setLoading(true);
     const formData = new FormData();
     
+    // Append standard text fields
     Object.keys(data).forEach(key => {
-      if (key !== 'images' && key !== 'sections') formData.append(key, data[key]);
+      if (key !== 'images' && key !== 'sections') {
+        formData.append(key, data[key]);
+      }
     });
 
+    // Sections must be stringified for Multer/Backend parsing
     formData.append('sections', JSON.stringify(data.sections));
     
-    // Satisfy GeoJSON requirement
+    // Default GeoJSON Location
     formData.append('location', JSON.stringify({ type: 'Point', coordinates: [0, 0] }));
 
+    // Append multiple files
     if (data.images && data.images.length > 0) {
-      Array.from(data.images).forEach(file => formData.append('images', file));
+      Array.from(data.images).forEach(file => {
+        formData.append('images', file);
+      });
     }
 
     try {
-      const token = localStorage.getItem('token'); // Get token from storage
-
-      await axios.post('http://localhost:5000/api/venues', formData, {
-        headers: { 
-          'Content-Type': 'multipart/form-data',
-          'Authorization': `Bearer ${token}` // Pass JWT token
-        },
-        withCredentials: true
+      await apiClient.post('/venues', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       });
-      alert('Venue Created Successfully!');
+      toast.success('Venue created successfully!');
+      // Reset or redirect logic here
     } catch (err) {
-      alert(err.response?.data?.message || 'Error creating venue');
+      toast.error(err.response?.data?.message || 'Error creating venue');
     } finally {
       setLoading(false);
     }
@@ -114,28 +117,29 @@ const CreateVenueForm = () => {
               {currentStep === 1 && (
                 <motion.div key="1" variants={fadeInVariant} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                   <div className="space-y-2">
-                    <Label className="font-bold text-zinc-900 dark:text-zinc-50">Venue Name</Label>
-                    <Input {...register('name', { required: true })} className="h-12 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-black dark:text-white" />
+                    <Label className="font-bold">Venue Name</Label>
+                    <Input {...register('name', { required: true })} className="h-12" />
                   </div>
                   <div className="grid grid-cols-2 gap-6">
                     <div className="space-y-2">
-                      <Label className="font-bold text-zinc-900 dark:text-zinc-50">City</Label>
-                      <Input {...register('city', { required: true })} className="h-12 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-black dark:text-white" />
+                      <Label className="font-bold">City</Label>
+                      <Input {...register('city', { required: true })} className="h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="font-bold text-zinc-900 dark:text-zinc-50">Venue Type</Label>
+                      <Label className="font-bold">Venue Type</Label>
                       <Controller
                         name="venueType"
                         control={control}
                         render={({ field }) => (
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <SelectTrigger className="h-12 border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-black dark:text-white">
+                            <SelectTrigger className="h-12">
                               <SelectValue />
                             </SelectTrigger>
-                            <SelectContent className="bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800">
+                            <SelectContent>
                               <SelectItem value="cinema">Cinema</SelectItem>
                               <SelectItem value="stadium">Stadium</SelectItem>
                               <SelectItem value="club">Club</SelectItem>
+                              <SelectItem value="theatre">Theatre</SelectItem>
                             </SelectContent>
                           </Select>
                         )}
@@ -143,40 +147,39 @@ const CreateVenueForm = () => {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label className="font-bold text-zinc-900 dark:text-zinc-50">Address</Label>
-                    <Textarea {...register('address')} className="min-h-[120px] border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-black dark:text-white" />
+                    <Label className="font-bold">Address</Label>
+                    <Textarea {...register('address', { required: true })} className="min-h-[120px]" />
                   </div>
                 </motion.div>
               )}
 
-              {/* Step 2 and 3 continue with same high-contrast patterns... */}
               {currentStep === 2 && (
                 <motion.div key="2" variants={fadeInVariant} initial="hidden" animate="visible" exit="exit" className="space-y-6">
-                  <div className="flex justify-between items-center text-zinc-900 dark:text-zinc-50">
+                  <div className="flex justify-between items-center">
                     <h3 className="text-xl font-bold italic">Seating Layout</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', rows: 0, seatsPerRow: 0, isStanding: false })} className="border-zinc-900 dark:border-zinc-100">
+                    <Button type="button" variant="outline" size="sm" onClick={() => append({ name: '', rows: 0, seatsPerRow: 0, totalCapacity: 0, isStanding: false })}>
                       <Plus className="h-4 w-4 mr-2" /> Add Section
                     </Button>
                   </div>
                   <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                     {fields.map((field, index) => (
-                      <div key={field.id} className="p-5 border border-zinc-100 dark:border-zinc-800 rounded-xl bg-zinc-50 dark:bg-zinc-900/30 relative">
+                      <div key={field.id} className="p-5 border rounded-xl relative bg-zinc-50 dark:bg-zinc-900/30">
                         <Button variant="ghost" size="icon" className="absolute top-2 right-2 text-zinc-400 hover:text-red-500" onClick={() => remove(index)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                        <Input {...register(`sections.${index}.name`)} placeholder="Section Name" className="border-zinc-200 dark:border-zinc-800 mb-4 bg-white dark:bg-zinc-900 text-black dark:text-white" />
+                        <Input {...register(`sections.${index}.name`)} placeholder="Section Name" className="mb-4" />
                         <div className="flex items-center gap-6">
-                          <label className="flex items-center gap-2 text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                          <label className="flex items-center gap-2 text-sm font-medium">
                             <Controller name={`sections.${index}.isStanding`} control={control} render={({ field }) => ( <Checkbox checked={field.value} onCheckedChange={field.onChange} /> )} />
                             Standing Area
                           </label>
                           {!watch(`sections.${index}.isStanding`) ? (
                             <div className="flex gap-4">
-                              <Input type="number" placeholder="Rows" {...register(`sections.${index}.rows`)} className="w-24 bg-white dark:bg-zinc-900 text-black dark:text-white border-zinc-200" />
-                              <Input type="number" placeholder="Seats" {...register(`sections.${index}.seatsPerRow`)} className="w-24 bg-white dark:bg-zinc-900 text-black dark:text-white border-zinc-200" />
+                              <Input type="number" placeholder="Rows" {...register(`sections.${index}.rows`)} className="w-24" />
+                              <Input type="number" placeholder="Seats" {...register(`sections.${index}.seatsPerRow`)} className="w-24" />
                             </div>
                           ) : (
-                            <Input type="number" placeholder="Capacity" {...register(`sections.${index}.totalCapacity`)} className="w-full bg-white dark:bg-zinc-900 text-black dark:text-white border-zinc-200" />
+                            <Input type="number" placeholder="Capacity" {...register(`sections.${index}.totalCapacity`)} className="w-full" />
                           )}
                         </div>
                       </div>
@@ -186,10 +189,10 @@ const CreateVenueForm = () => {
               )}
 
               {currentStep === 3 && (
-                <motion.div key="3" variants={fadeInVariant} initial="hidden" animate="visible" exit="exit" className="space-y-6 text-zinc-900 dark:text-zinc-50">
+                <motion.div key="3" variants={fadeInVariant} initial="hidden" animate="visible" exit="exit" className="space-y-6">
                   <h3 className="text-xl font-bold text-center italic">Upload Venue Media</h3>
                   <div 
-                    className="w-full h-64 border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer"
+                    className="w-full h-64 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 cursor-pointer"
                     onClick={() => document.getElementById('file-upload').click()}
                   >
                     <ImagePlus className="h-10 w-10 text-zinc-400" />
@@ -202,11 +205,11 @@ const CreateVenueForm = () => {
           </form>
         </CardContent>
         
-        <CardFooter className="flex justify-between p-8 bg-zinc-50/30 dark:bg-zinc-900/40 border-t border-zinc-100 dark:border-zinc-800">
-          <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1 || loading} className="text-zinc-500 hover:text-black dark:hover:text-white">
+        <CardFooter className="flex justify-between p-8 border-t">
+          <Button variant="ghost" onClick={prevStep} disabled={currentStep === 1 || loading}>
             <ChevronLeft className="h-4 w-4 mr-2" /> Back
           </Button>
-          <Button onClick={currentStep === 3 ? handleSubmit(onSubmit) : nextStep} disabled={loading} className="px-10 bg-zinc-900 text-white dark:bg-zinc-50 dark:text-zinc-900 font-bold active:scale-95">
+          <Button onClick={currentStep === 3 ? handleSubmit(onSubmit) : nextStep} disabled={loading} className="px-10">
             {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             {currentStep === 3 ? 'Finalize Venue' : 'Continue'}
           </Button>
@@ -216,4 +219,4 @@ const CreateVenueForm = () => {
   );
 };
 
-export default CreateVenueForm;
+export default CreateVenue;

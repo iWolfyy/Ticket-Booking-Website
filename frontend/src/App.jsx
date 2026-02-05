@@ -15,7 +15,7 @@ const ConcertDetails = lazy(() => import('./pages/ConcertDetails'));
 const SportsDetails = lazy(() => import('./pages/SportsDetails'));
 const TheatreDetails = lazy(() => import('./pages/TheatreDetails'));
 const SeatBooking = lazy(() => import('./components/SeatBooking'));
-const createVenue = lazy(() => import('./pages/createVenue'));
+const CreateVenue = lazy(() => import('./pages/createVenue'));
 
 // -- Loading Spinner --
 const PageLoader = () => (
@@ -44,7 +44,7 @@ const App = () => {
                 <Route path="/sports/:id" element={<SportsDetails />} />
                 <Route path="/theatre/:id" element={<TheatreDetails />} />
                 <Route path="/booking/:id" element={<SeatBooking />} />
-                <Route path="/createvenue" element={<createVenue />} />
+                <Route path="/createvenue" element={<CreateVenue />} />
               </Route>
 
               {/* CUSTOM AUTH PAGES (Navbar/Footer manually added for full control) */}
