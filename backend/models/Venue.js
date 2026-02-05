@@ -4,7 +4,20 @@ const VenueSchema = new mongoose.Schema({
   name: { type: String, required: true },
   city: { type: String, required: true, index: true },
   address: { type: String, required: true },
+  owner: { 
+  type: mongoose.Schema.Types.ObjectId, 
+  ref: 'User', 
+  required: true,
+  index: true 
+},
   venueType: { type: String, enum: ['cinema', 'stadium', 'club', 'theatre'] },
+  images: [String],
+  description: String,
+  location: {
+    type: { type: String, enum: ['Point'], default: 'Point' },
+    coordinates: { type: [Number], index: '2dsphere' },
+  },
+
   
   // Define layout (Sections or Screens)
   sections: [{
