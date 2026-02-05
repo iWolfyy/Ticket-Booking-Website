@@ -1,14 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { 
-  Bell, 
-  Calendar, 
-  Megaphone, 
-  Ticket, 
-  Info, 
-  CheckCheck,
-  Circle
-} from "lucide-react";
+import { Bell, Calendar, Megaphone, Ticket, Info, Circle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDistanceToNow } from "date-fns";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -25,18 +18,38 @@ export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([]);
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
-  // Fetch notifications from your backend
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const res = await apiClient.get('/users/notifications');
-        setNotifications(res.data);
-      } catch (err) {
-        console.error("Failed to fetch notifications", err);
-      }
-    };
     fetchNotifications();
   }, []);
+
+  const fetchNotifications = async () => {
+    try {
+      const res = await apiClient.get('/activities');
+      setNotifications(res.data);
+    } catch (err) {
+      console.error("Fetch failed", err);
+    }
+  };
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      await apiClient.patch(`/activities/${id}/read`);
+      setNotifications(prev => 
+        prev.map(n => n._id === id ? { ...n, isRead: true } : n)
+      );
+    } catch (err) {
+      console.error("Failed to mark as read", err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await apiClient.patch('/activities/read-all');
+      setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error("Failed to mark all as read", err);
+    }
+  };
 
   const getIcon = (type) => {
     switch (type) {
@@ -58,17 +71,14 @@ export default function NotificationCenter() {
         </Button>
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent 
-        align="end" 
-        className="w-80 p-0 overflow-hidden shadow-2xl border-muted/50 rounded-xl bg-card/95 backdrop-blur-md"
-      >
+      <DropdownMenuContent align="end" className="w-80 p-0 shadow-2xl border-muted/50 rounded-xl bg-card/95 backdrop-blur-md">
         <DropdownMenuLabel className="p-4 flex items-center justify-between">
           <div className="flex flex-col gap-0.5">
             <span className="font-bold text-xs uppercase tracking-widest">Notifications</span>
-            <span className="text-[10px] text-muted-foreground font-medium">Events & Announcements</span>
+            <span className="text-[10px] text-muted-foreground font-medium">{unreadCount} Unread</span>
           </div>
           {unreadCount > 0 && (
-            <Button variant="ghost" className="h-6 text-[9px] uppercase font-bold text-primary px-2 hover:bg-primary/10">
+            <Button variant="ghost" className="h-6 text-[9px] uppercase font-bold text-primary px-2" onClick={handleMarkAllRead}>
               Mark all read
             </Button>
           )}
@@ -86,6 +96,7 @@ export default function NotificationCenter() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ duration: 0.2, delay: i * 0.03 }}
+                  onClick={() => !n.isRead && handleMarkAsRead(n._id)}
                   className={cn(
                     "p-4 flex gap-3 hover:bg-muted/50 cursor-pointer transition-all border-b border-muted/20 relative group/item",
                     !n.isRead && "bg-primary/[0.03]"
@@ -93,14 +104,10 @@ export default function NotificationCenter() {
                 >
                   <div className="mt-1 flex-shrink-0">{getIcon(n.type)}</div>
                   <div className="space-y-1 pr-4">
-                    <p className="text-[11px] font-bold leading-none tracking-tight">
-                        {n.title}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">
-                        {n.description}
-                    </p>
+                    <p className="text-[11px] font-bold leading-none tracking-tight">{n.title}</p>
+                    <p className="text-[10px] text-muted-foreground leading-relaxed line-clamp-2">{n.description}</p>
                     <p className="text-[8px] text-zinc-400 font-bold uppercase tracking-tighter">
-                        Just Now
+                      {formatDistanceToNow(new Date(n.createdAt), { addSuffix: true })}
                     </p>
                   </div>
                   {!n.isRead && (
@@ -118,12 +125,6 @@ export default function NotificationCenter() {
             )}
           </AnimatePresence>
         </ScrollArea>
-
-        <DropdownMenuSeparator />
-        
-        <button className="w-full p-3 text-[10px] font-black uppercase tracking-widest text-center hover:bg-muted/50 transition-colors text-muted-foreground/60 hover:text-foreground">
-          View All Activity
-        </button>
       </DropdownMenuContent>
     </DropdownMenu>
   );

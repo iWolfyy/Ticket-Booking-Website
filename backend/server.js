@@ -43,7 +43,8 @@ app.use('/api/shows', require('./routes/showRoutes'));
 app.use('/api/bookings', require('./routes/bookingRoutes'));
 // Search Routes
 app.use('/api/search', require('./routes/searchRoutes'));
-
+// Activity Routes
+app.use('/api/activities', require('./routes/activityRoutes'));
 
 
 
