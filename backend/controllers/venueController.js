@@ -86,12 +86,6 @@ exports.updateVenue = async (req, res) => {
             return res.status(404).json({ message: 'Venue not found' });
         }
 
-        // 1. Authorization Check
-        // Ensure the person updating is the owner or an admin
-        if (venue.owner.toString() !== req.user.id && req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Not authorized to update this venue' });
-        }
-
         // 2. Prepare Update Data
         const updateData = { ...req.body };
 

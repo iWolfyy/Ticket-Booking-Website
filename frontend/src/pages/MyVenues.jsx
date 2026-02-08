@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { 
   MoreHorizontal, Edit, Trash2, Plus, 
-  MapPin, Building2, Layout 
+  MapPin, Building2, Layout, Loader2 
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -16,14 +16,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
-import { BlurFade } from "@/components/ui/blur-fade"; //
+import { BlurFade } from "@/components/ui/blur-fade";
+import { toast } from "sonner";
 
 const MyVenues = () => {
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [deleteId, setDeleteId] = useState(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
+  // Columns definition moved inside to access state triggers
   const columns = [
     {
       accessorKey: "name",
@@ -50,14 +64,11 @@ const MyVenues = () => {
     {
       accessorKey: "venueType",
       header: "Type",
-      cell: ({ row }) => {
-        const type = row.getValue("venueType");
-        return (
-          <Badge variant="secondary" className="font-normal capitalize px-2.5 py-0.5">
-            {type}
-          </Badge>
-        );
-      }
+      cell: ({ row }) => (
+        <Badge variant="secondary" className="font-normal capitalize px-2.5 py-0.5">
+          {row.getValue("venueType")}
+        </Badge>
+      )
     },
     {
       accessorKey: "sections",
@@ -82,11 +93,17 @@ const MyVenues = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[160px]">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => navigate(`/edit-venue/${venue._id}`)}>
+              <DropdownMenuItem onClick={() => navigate(`/editvenue/${venue._id}`)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit Venue
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+              <DropdownMenuItem 
+                className="text-destructive focus:bg-destructive/10 focus:text-destructive"
+                onClick={() => {
+                  setDeleteId(venue._id);
+                  setIsDrawerOpen(true);
+                }}
+              >
                 <Trash2 className="mr-2 h-4 w-4" /> Delete Venue
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -96,29 +113,45 @@ const MyVenues = () => {
     },
   ];
 
+  const fetchVenues = async () => {
+    try {
+      const response = await apiClient.get('/venues');
+      setVenues(response.data);
+    } catch (error) {
+      toast.error("Failed to load venues");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!deleteId) return;
+    setIsDeleting(true);
+    try {
+      await apiClient.delete(`/venues/${deleteId}`);
+      setVenues((prev) => prev.filter((v) => v._id !== deleteId));
+      toast.success("Venue removed successfully");
+      setIsDrawerOpen(false);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error deleting venue");
+    } finally {
+      setIsDeleting(false);
+      setDeleteId(null);
+    }
+  };
+
   useEffect(() => {
-    const fetchVenues = async () => {
-      try {
-        const response = await apiClient.get('/venues');
-        setVenues(response.data);
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchVenues();
   }, []);
 
   return (
     <div className="max-w-6xl mx-auto py-10 px-6">
-      {/* Header Section with Animation */}
       <BlurFade delay={0.1} inView>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Manage Venues</h1>
             <p className="text-muted-foreground mt-1">
-              Create and manage your event locations and seating layouts.
+              View and manage your registered event locations.
             </p>
           </div>
           <Button onClick={() => navigate('/createvenue')} className="h-10 px-4">
@@ -131,16 +164,45 @@ const MyVenues = () => {
         <Separator className="mb-8" />
       </BlurFade>
 
-      {/* Content Section with Delayed Animation */}
       <BlurFade delay={0.3} inView>
         {loading ? (
           <div className="h-64 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
           <DataTable columns={columns} data={venues} searchKey="name" />
         )}
       </BlurFade>
+
+      {/* Confirmation Drawer */}
+      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+        <DrawerContent>
+          <div className="mx-auto w-full max-w-sm">
+            <DrawerHeader>
+              <DrawerTitle className="text-destructive flex items-center gap-2">
+                <Trash2 className="h-5 w-5" /> Delete Venue?
+              </DrawerTitle>
+              <DrawerDescription>
+                This action cannot be undone. All event data associated with this venue will be affected.
+              </DrawerDescription>
+            </DrawerHeader>
+            <DrawerFooter className="flex-row gap-3 pb-10">
+              <Button 
+                variant="destructive" 
+                className="flex-1"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isDeleting ? "Deleting..." : "Confirm Delete"}
+              </Button>
+              <DrawerClose asChild>
+                <Button variant="outline" className="flex-1">Cancel</Button>
+              </DrawerClose>
+            </DrawerFooter>
+          </div>
+        </DrawerContent>
+      </Drawer>
     </div>
   );
 };

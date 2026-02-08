@@ -44,7 +44,6 @@ const EditVenue = () => {
   const { fields, append, remove } = useFieldArray({ control, name: "sections" });
   const progressWidth = ((currentStep - 1) / (STEPS.length - 1)) * 100;
 
-  // Fetch Existing Venue Data
   useEffect(() => {
     const fetchVenue = async () => {
       try {
@@ -109,7 +108,7 @@ const EditVenue = () => {
       await apiClient.put(`/venues/${id}`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success('Venue Updated');
+      toast.success('Venue Updated Successfully');
       navigate('/myvenues');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Update failed');
@@ -118,13 +117,11 @@ const EditVenue = () => {
     }
   };
 
-  if (fetching) {
-    return (
-      <div className="h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  if (fetching) return (
+    <div className="h-[60vh] flex items-center justify-center text-muted-foreground font-mono text-xs">
+      <Loader2 className="h-4 w-4 animate-spin mr-2" /> INITIALIZING DATA...
+    </div>
+  );
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
@@ -253,14 +250,12 @@ const EditVenue = () => {
                   <motion.div key="3" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-5">
                     <Label className="text-xs font-bold uppercase text-muted-foreground">Current & New Media</Label>
                     <div className="grid grid-cols-4 gap-3">
-                      {/* Show existing images from server */}
                       {existingImages.map((src, i) => (
                         <div key={`existing-${i}`} className="aspect-[4/3] rounded-md overflow-hidden border bg-muted relative shadow-sm opacity-60">
                           <img src={src} className="w-full h-full object-cover" alt="Current" />
                           <div className="absolute top-1 right-1 bg-black/50 text-[8px] text-white px-1 rounded">Live</div>
                         </div>
                       ))}
-                      {/* Show new previews selected locally */}
                       {newPreviews.map((src, i) => (
                         <div key={`new-${i}`} className="aspect-[4/3] rounded-md overflow-hidden border border-primary/50 relative group shadow-sm">
                           <img src={src} className="w-full h-full object-cover" alt="New Preview" />

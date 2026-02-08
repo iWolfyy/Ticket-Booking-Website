@@ -19,6 +19,7 @@ const TheatreDetails = lazy(() => import('./pages/TheatreDetails'));
 const SeatBooking = lazy(() => import('./components/SeatBooking'));
 const CreateVenue = lazy(() => import('./pages/createVenue'));
 const MyVenues = lazy(() => import('./pages/MyVenues'));
+const EditVenue = lazy(() => import('./pages/EditVenue'));
 
 const PageLoader = () => (
   <div className="h-screen w-full flex items-center justify-center bg-background">
@@ -54,6 +55,7 @@ const App = () => {
               <Route element={<ProtectedRoute allowedRoles={['venuemanager', 'admin', 'seller']} />}>
                 <Route path="/createvenue" element={<CreateVenue />} />
                 <Route path="/myvenues" element={<MyVenues />} />
+                <Route path="/editvenue/:id" element={<EditVenue />} />
               </Route>
             </Route>
           </Routes>
