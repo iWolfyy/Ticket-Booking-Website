@@ -1,11 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Building2, LayoutTemplate, Upload, Plus, Trash2, 
-  ChevronLeft, ImagePlus, Loader2, X, MapPin, CheckCircle2, Save
-} from 'lucide-react';
+import { Building2, LayoutTemplate, Upload, Plus, Trash2, ChevronLeft, ImagePlus, Loader2, X, MapPin, CheckCircle2 } from 'lucide-react';
 import apiClient from '../lib/axios';
 
 import { Button } from "@/components/ui/button";
@@ -25,54 +22,21 @@ const STEPS = [
   { id: 3, name: 'Gallery', icon: Upload, desc: 'Media' },
 ];
 
-const EditVenue = () => {
-  const { id } = useParams();
+const CreateVenue = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [fetching, setFetching] = useState(true);
-  const [existingImages, setExistingImages] = useState([]);
-  const [newPreviews, setNewPreviews] = useState([]);
+  const [previews, setPreviews] = useState([]);
 
-  const { register, control, handleSubmit, watch, reset, formState: { errors } } = useForm({
+  const { register, control, handleSubmit, watch, formState: { errors } } = useForm({
     defaultValues: {
       name: '', city: '', address: '', venueType: 'cinema',
-      sections: []
+      sections: [{ name: 'General', rows: 10, seatsPerRow: 10, isStanding: false }]
     }
   });
 
   const { fields, append, remove } = useFieldArray({ control, name: "sections" });
   const progressWidth = ((currentStep - 1) / (STEPS.length - 1)) * 100;
-
-  // Fetch Existing Venue Data
-  useEffect(() => {
-    const fetchVenue = async () => {
-      try {
-        const { data } = await apiClient.get('/venues');
-        const venue = data.find(v => v._id === id);
-        
-        if (venue) {
-          reset({
-            name: venue.name,
-            city: venue.city,
-            address: venue.address,
-            venueType: venue.venueType,
-            sections: venue.sections || []
-          });
-          setExistingImages(venue.images || []);
-        } else {
-          toast.error("Venue not found");
-          navigate('/myvenues');
-        }
-      } catch (err) {
-        toast.error("Failed to load venue data");
-        navigate('/myvenues');
-      } finally {
-        setFetching(false);
-      }
-    };
-    fetchVenue();
-  }, [id, reset, navigate]);
 
   const handleNext = (e) => {
     e.preventDefault();
@@ -87,44 +51,39 @@ const EditVenue = () => {
   const handleImageChange = (e) => {
     if (!e.target.files) return;
     const files = Array.from(e.target.files);
-    const previews = files.map(file => URL.createObjectURL(file));
-    setNewPreviews(prev => [...prev, ...previews]);
+    const newPreviews = files.map(file => URL.createObjectURL(file));
+    setPreviews(prev => [...prev, ...newPreviews]);
   };
 
   const onSubmit = async (data) => {
     setLoading(true);
     const formData = new FormData();
     
+    // Append standard fields
     Object.keys(data).forEach(key => {
       if (key !== 'images' && key !== 'sections') formData.append(key, data[key]);
     });
 
+    // Append sections as JSON
     formData.append('sections', JSON.stringify(data.sections));
     
+    // Append image files
     if (data.images) {
       Array.from(data.images).forEach(file => formData.append('images', file));
     }
 
     try {
-      await apiClient.put(`/venues/${id}`, formData, {
+      await apiClient.post('/venues', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
-      toast.success('Venue Updated');
+      toast.success('Venue Created Successfully');
       navigate('/myvenues');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Update failed');
+      toast.error(err.response?.data?.message || 'Creation failed');
     } finally {
       setLoading(false);
     }
   };
-
-  if (fetching) {
-    return (
-      <div className="h-[60vh] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4">
@@ -132,7 +91,7 @@ const EditVenue = () => {
       <div className="relative mb-10">
         <div className="flex justify-between relative z-10">
           {STEPS.map((step) => (
-            <div key={step.id} className="flex flex-col items-center group">
+            <div key={step.id} className="flex flex-col items-center">
               <div className={`w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all duration-300
                 ${currentStep >= step.id ? 'bg-primary border-primary text-primary-foreground' : 'bg-background border-muted text-muted-foreground'}
               `}>
@@ -156,7 +115,7 @@ const EditVenue = () => {
           <CardHeader className="space-y-1 pb-6 border-b">
             <div className="flex justify-between items-center">
               <div>
-                <CardTitle className="text-xl font-bold tracking-tight uppercase">Edit Venue</CardTitle>
+                <CardTitle className="text-xl font-bold tracking-tight uppercase">Create New Venue</CardTitle>
                 <CardDescription className="text-sm">{STEPS[currentStep - 1].desc}</CardDescription>
               </div>
               <Badge variant="outline" className="text-[10px] font-mono px-2 py-0">
@@ -166,20 +125,20 @@ const EditVenue = () => {
           </CardHeader>
 
           <CardContent className="pt-6">
-            <form id="edit-venue-form" onSubmit={handleSubmit(onSubmit)}>
+            <form id="create-venue-form" onSubmit={handleSubmit(onSubmit)}>
               <AnimatePresence mode="wait">
                 {currentStep === 1 && (
                   <motion.div key="1" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-5">
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-xs font-bold uppercase text-muted-foreground">Venue Name</Label>
-                        <Input id="name" {...register('name', { required: true })} className="h-9" />
+                        <Input id="name" {...register('name', { required: "Name is required" })} placeholder="Grand Arena" className="h-9" />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="city" className="text-xs font-bold uppercase text-muted-foreground">City</Label>
                         <div className="relative">
                           <MapPin className="absolute left-2.5 top-2.5 w-4 h-4 text-muted-foreground" />
-                          <Input id="city" {...register('city', { required: true })} className="pl-9 h-9" />
+                          <Input id="city" {...register('city', { required: "City is required" })} placeholder="New York" className="pl-9 h-9" />
                         </div>
                       </div>
                     </div>
@@ -189,9 +148,9 @@ const EditVenue = () => {
                         name="venueType"
                         control={control}
                         render={({ field }) => (
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <SelectTrigger className="h-9">
-                              <SelectValue />
+                              <SelectValue placeholder="Select type" />
                             </SelectTrigger>
                             <SelectContent>
                               {['cinema', 'stadium', 'club', 'theatre'].map(type => (
@@ -204,7 +163,7 @@ const EditVenue = () => {
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="address" className="text-xs font-bold uppercase text-muted-foreground">Full Address</Label>
-                      <Textarea id="address" {...register('address', { required: true })} className="min-h-[90px] resize-none" />
+                      <Textarea id="address" {...register('address', { required: "Address is required" })} className="min-h-[90px] resize-none" />
                     </div>
                   </motion.div>
                 )}
@@ -219,18 +178,18 @@ const EditVenue = () => {
                     </div>
                     <div className="space-y-3 max-h-[350px] overflow-y-auto pr-1">
                       {fields.map((field, index) => (
-                        <div key={field.id} className="p-4 border rounded-lg bg-muted/20 relative group transition-colors hover:bg-muted/40">
-                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => remove(index)}>
+                        <div key={field.id} className="p-4 border rounded-lg bg-muted/20 relative group transition-colors">
+                          <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 opacity-0 group-hover:opacity-100" onClick={() => remove(index)}>
                             <X className="h-4 w-4" />
                           </Button>
                           <div className="grid gap-3">
-                            <Input {...register(`sections.${index}.name`)} placeholder="Section Title" className="font-bold border-none bg-transparent h-6 p-0 focus-visible:ring-0 text-sm" />
+                            <Input {...register(`sections.${index}.name`)} placeholder="Section Title (e.g. VIP)" className="font-bold border-none bg-transparent h-6 p-0 focus-visible:ring-0 text-sm" />
                             <div className="flex items-center gap-6">
                               <label className="flex items-center gap-2 cursor-pointer">
                                 <Controller name={`sections.${index}.isStanding`} control={control} render={({ field }) => ( 
                                   <Checkbox checked={field.value} onCheckedChange={field.onChange} className="h-4 w-4" /> 
                                 )} />
-                                <span className="text-[11px] font-semibold text-muted-foreground uppercase">Standing</span>
+                                <span className="text-[11px] font-semibold text-muted-foreground uppercase">Standing Area</span>
                               </label>
                               {!watch(`sections.${index}.isStanding`) ? (
                                 <div className="flex items-center gap-2 bg-background border px-3 py-1 rounded-md text-xs">
@@ -239,7 +198,7 @@ const EditVenue = () => {
                                   <input type="number" placeholder="Seats" {...register(`sections.${index}.seatsPerRow`)} className="w-10 bg-transparent text-center outline-none" />
                                 </div>
                               ) : (
-                                <Input type="number" placeholder="Capacity" {...register(`sections.${index}.totalCapacity`)} className="h-8 w-24 text-xs" />
+                                <Input type="number" placeholder="Total Capacity" {...register(`sections.${index}.totalCapacity`)} className="h-8 w-32 text-xs" />
                               )}
                             </div>
                           </div>
@@ -251,32 +210,24 @@ const EditVenue = () => {
 
                 {currentStep === 3 && (
                   <motion.div key="3" initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -5 }} className="space-y-5">
-                    <Label className="text-xs font-bold uppercase text-muted-foreground">Current & New Media</Label>
+                    <Label className="text-xs font-bold uppercase text-muted-foreground">Gallery Preview</Label>
                     <div className="grid grid-cols-4 gap-3">
-                      {/* Show existing images from server */}
-                      {existingImages.map((src, i) => (
-                        <div key={`existing-${i}`} className="aspect-[4/3] rounded-md overflow-hidden border bg-muted relative shadow-sm opacity-60">
-                          <img src={src} className="w-full h-full object-cover" alt="Current" />
-                          <div className="absolute top-1 right-1 bg-black/50 text-[8px] text-white px-1 rounded">Live</div>
-                        </div>
-                      ))}
-                      {/* Show new previews selected locally */}
-                      {newPreviews.map((src, i) => (
-                        <div key={`new-${i}`} className="aspect-[4/3] rounded-md overflow-hidden border border-primary/50 relative group shadow-sm">
-                          <img src={src} className="w-full h-full object-cover" alt="New Preview" />
+                      {previews.map((src, i) => (
+                        <div key={i} className="aspect-[4/3] rounded-md overflow-hidden border border-primary/20 relative group shadow-sm">
+                          <img src={src} className="w-full h-full object-cover" alt="Preview" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                            <Trash2 className="text-white w-4 h-4 cursor-pointer" onClick={() => setNewPreviews(p => p.filter((_, idx) => idx !== i))} />
+                            <Trash2 className="text-white w-4 h-4 cursor-pointer" onClick={() => setPreviews(p => p.filter((_, idx) => idx !== i))} />
                           </div>
                         </div>
                       ))}
                     </div>
                     <div 
-                      className="group relative w-full h-24 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-muted/40 transition-all cursor-pointer border-muted-foreground/20 hover:border-primary/50"
-                      onClick={() => document.getElementById('edit-file-upload').click()}
+                      className="group relative w-full h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 hover:bg-muted/40 transition-all cursor-pointer border-muted-foreground/20 hover:border-primary/50"
+                      onClick={() => document.getElementById('file-upload').click()}
                     >
-                      <ImagePlus className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                      <p className="text-[11px] font-medium text-muted-foreground uppercase">Add more images</p>
-                      <input id="edit-file-upload" type="file" multiple className="hidden" {...register('images', { onChange: handleImageChange })} />
+                      <Upload className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <p className="text-[11px] font-medium text-muted-foreground uppercase">Click to upload photos</p>
+                      <input id="file-upload" type="file" multiple className="hidden" {...register('images', { onChange: handleImageChange })} />
                     </div>
                   </motion.div>
                 )}
@@ -294,9 +245,8 @@ const EditVenue = () => {
                   Continue
                 </Button>
                ) : (
-                <Button form="edit-venue-form" type="submit" disabled={loading} className="h-9 px-8 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                  Update Venue
+                <Button form="create-venue-form" type="submit" disabled={loading} className="h-9 px-8 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
+                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Publish Venue"}
                 </Button>
                )}
             </div>
@@ -307,4 +257,4 @@ const EditVenue = () => {
   );
 };
 
-export default EditVenue;
+export default CreateVenue;
