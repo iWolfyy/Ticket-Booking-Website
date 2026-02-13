@@ -340,3 +340,15 @@ exports.getMyEvents = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+
+// @desc    Get logged in user events
+// @route   GET /api/events/me
+exports.getMyEvents = async (req, res) => {
+    try {
+        const events = await Event.find({ seller: req.user.id });
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

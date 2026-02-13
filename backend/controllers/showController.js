@@ -1,5 +1,6 @@
 const Show = require('../models/Show');
 const Venue = require('../models/Venue');
+const Event = require('../models/Event');
 
 // @desc    Create a new show
 // @route   POST /api/shows
@@ -152,3 +153,35 @@ exports.getShowByID = async (req, res) => {
     }
 };
         
+
+// @desc    Get all shows (Filtered by Seller)
+// @route   GET /api/shows
+// @access  Private (Seller/Admin)
+exports.getShows = async (req, res) => {
+    try {
+        let query;
+        if (req.user.role === 'admin') {
+            query = Show.find();
+        } else {
+            // Find events owned by this seller
+            const myEvents = await Event.find({ seller: req.user.id }).select('_id');
+            
+            // If seller has no events, return empty array immediately to prevent crashes
+            if (!myEvents || myEvents.length === 0) {
+                return res.json([]);
+            }
+
+            const eventIds = myEvents.map(ev => ev._id);
+            query = Show.find({ event: { $in: eventIds } });
+        }
+
+        const shows = await query
+            .populate('venue', 'name city')
+            .populate('event', 'title posterImage category');
+
+        res.json(shows);
+    } catch (error) {
+        console.error("SHOW_FETCH_ERROR:", error); // Check terminal for exact crash details
+        res.status(500).json({ message: "Server error while fetching shows" });
+    }
+};

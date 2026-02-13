@@ -18,6 +18,9 @@ router.route('/tmdb-search').get(protect, searchTMDB);
 // Management route
 router.get('/manage', protect, authorize('seller', 'admin'), getMyEvents);
 
+// Get events owned by the logged-in user
+router.get('/me', protect, authorize('seller', 'admin'), getMyEvents);
+
 router.route('/:id')
     .get(getEventById)
     .put(protect, authorize('seller', 'admin', 'eventmanager'), upload.single('bannerImage'), updateEvent)

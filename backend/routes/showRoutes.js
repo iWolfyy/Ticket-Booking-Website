@@ -1,7 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { createShow, getEventShows, updateShow, deleteShow, getShowByID } = require('../controllers/showController');
+const { createShow, getEventShows, updateShow, deleteShow, getShowByID, getShows } = require('../controllers/showController');
 const { protect, authorize } = require('../middleware/authMiddleware');
+
+// Get all shows (For the Manager Page)
+router.get('/', protect, getShows);
 
 // Create a new show
 router.post('/', protect, authorize('seller', 'admin', 'eventmanager'), createShow);

@@ -23,6 +23,7 @@ const EditVenue = lazy(() => import('./pages/EditVenue'));
 const CreateEvent = lazy(() => import('./pages/CreateEvent'));
 const MyEvents = lazy(() => import('./pages/MyEvents'));
 const EditEvent = lazy(() => import('./pages/EditEvent'));
+const ManageShows = lazy(() => import('./pages/ManageShows'));
 
 const PageLoader = () => (
   <div className="h-screen w-full flex items-center justify-center bg-background">
@@ -59,9 +60,14 @@ const App = () => {
                 <Route path="/createvenue" element={<CreateVenue />} />
                 <Route path="/myvenues" element={<MyVenues />} />
                 <Route path="/editvenue/:id" element={<EditVenue />} />
+              </Route>
+
+              {/* --- EVENT MANAGER & ADMIN ONLY --- */}
+              <Route element={<ProtectedRoute allowedRoles={['eventmanager', 'admin', 'seller']} />}>
                 <Route path="/createevent" element={<CreateEvent />} />
                 <Route path="/myevents" element={<MyEvents />} />
                 <Route path="/editevent/:id" element={<EditEvent />} />
+                <Route path="/manageshows" element={<ManageShows />} />
               </Route>
             </Route>
           </Routes>
