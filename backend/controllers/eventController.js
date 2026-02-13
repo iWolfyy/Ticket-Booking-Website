@@ -1,5 +1,5 @@
 const Event = require("../models/Event");
-const { fetchMovieFromTMDB } = require("../utils/tmdbHandler");
+const { fetchMovieFromTMDB, searchMovies} = require("../utils/tmdbHandler");
 const { fetchArtistDetails } = require("../utils/musicHandler");
 
 // @desc    Create a new event
@@ -208,6 +208,8 @@ exports.getEventById = async (req, res) => {
 // @desc    Update event
 // @route   PUT /api/events/:id
 
+// backend/controllers/eventController.js
+
 exports.updateEvent = async (req, res) => {
   try {
     let event = await Event.findById(req.params.id);
@@ -216,19 +218,28 @@ exports.updateEvent = async (req, res) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
-    //Ownership check: Only the seller who created the event or an admin can update it
+    // Ownership check
     if (
       event.seller.toString() !== req.user._id.toString() &&
       req.user.role !== "admin"
     ) {
-      return res
-        .status(403)
-        .json({ message: "Not authorized to update this event" });
+      return res.status(403).json({ message: "Not authorized to update this event" });
     }
 
-    event = await Event.findByIdAndUpdate(req.params.id, req.body, {
+    // Create a copy of the body data
+    const updateData = { ...req.body };
+
+    // 🔥 CRITICAL: If a new file was uploaded, add its path to updateData
+    if (req.file) {
+      updateData.bannerImage = req.file.path;
+    }
+
+    // Update the event with the combined data
+    event = await Event.findByIdAndUpdate(req.params.id, updateData, {
       new: true,
+      runValidators: true // Ensures schema validation remains intact
     });
+
     res.json(event);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -295,3 +306,37 @@ exports.searchEvents = async (req, res) => {
     }
 };
 
+
+
+// for TMDB searching
+exports.searchTMDB = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.json([]);
+
+    // Logic: Search TMDB for the title typed by the user
+    const results = await searchMovies(query);
+    
+    // Return the list of movies (titles, posters, IDs) to the frontend
+    res.status(200).json(results);
+  } catch (error) {
+    console.error("TMDB Search Error:", error);
+    res.status(500).json({ message: "Failed to fetch suggestions from TMDB" });
+  }
+};
+
+
+
+// @desc    Get events added by the logged-in user
+// @route   GET /api/events/manage
+// @access  Private (Seller/Admin/EventManager)
+exports.getMyEvents = async (req, res) => {
+    try {
+        // Use 'seller' as defined in your Event Schema
+        const events = await Event.find({ seller: req.user._id }); 
+        
+        res.json(events);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};

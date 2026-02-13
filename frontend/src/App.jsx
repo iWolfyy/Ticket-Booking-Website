@@ -20,6 +20,9 @@ const SeatBooking = lazy(() => import('./components/SeatBooking'));
 const CreateVenue = lazy(() => import('./pages/createVenue'));
 const MyVenues = lazy(() => import('./pages/MyVenues'));
 const EditVenue = lazy(() => import('./pages/EditVenue'));
+const CreateEvent = lazy(() => import('./pages/CreateEvent'));
+const MyEvents = lazy(() => import('./pages/MyEvents'));
+const EditEvent = lazy(() => import('./pages/EditEvent'));
 
 const PageLoader = () => (
   <div className="h-screen w-full flex items-center justify-center bg-background">
@@ -56,6 +59,9 @@ const App = () => {
                 <Route path="/createvenue" element={<CreateVenue />} />
                 <Route path="/myvenues" element={<MyVenues />} />
                 <Route path="/editvenue/:id" element={<EditVenue />} />
+                <Route path="/createevent" element={<CreateEvent />} />
+                <Route path="/myevents" element={<MyEvents />} />
+                <Route path="/editevent/:id" element={<EditEvent />} />
               </Route>
             </Route>
           </Routes>
