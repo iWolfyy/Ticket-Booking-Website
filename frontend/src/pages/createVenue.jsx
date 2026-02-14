@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, LayoutTemplate, Upload, Plus, Trash2, ChevronLeft, ImagePlus, Loader2, X, MapPin, CheckCircle2 } from 'lucide-react';
+import { Building2, LayoutTemplate, Upload, Plus, Trash2, ChevronLeft, ImagePlus, Loader2, X, MapPin, CheckCircle2, Save } from 'lucide-react';
 import apiClient from '../lib/axios';
 
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BlurFade } from "@/components/ui/blur-fade";
+
+// Magic UI Component
+import { RainbowButton } from "@/components/ui/rainbow-button";
 
 const STEPS = [
   { id: 1, name: 'Identity', icon: Building2, desc: 'Venue details' },
@@ -59,15 +62,12 @@ const CreateVenue = () => {
     setLoading(true);
     const formData = new FormData();
     
-    // Append standard fields
     Object.keys(data).forEach(key => {
       if (key !== 'images' && key !== 'sections') formData.append(key, data[key]);
     });
 
-    // Append sections as JSON
     formData.append('sections', JSON.stringify(data.sections));
     
-    // Append image files
     if (data.images) {
       Array.from(data.images).forEach(file => formData.append('images', file));
     }
@@ -245,9 +245,19 @@ const CreateVenue = () => {
                   Continue
                 </Button>
                ) : (
-                <Button form="create-venue-form" type="submit" disabled={loading} className="h-9 px-8 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Publish Venue"}
-                </Button>
+                <RainbowButton 
+                  form="create-venue-form" 
+                  type="submit" 
+                  disabled={loading} 
+                  className="h-9 px-8 font-bold text-xs uppercase tracking-widest"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Publish Venue
+                </RainbowButton>
                )}
             </div>
           </CardFooter>

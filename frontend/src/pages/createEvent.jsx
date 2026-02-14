@@ -22,6 +22,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 
+// Magic UI Component
+import { RainbowButton } from "@/components/ui/rainbow-button";
+
 const eventSchema = z.object({
   title: z.string().min(2, "Title is required"),
   category: z.enum(["movie", "concert", "sports", "theatre"]),
@@ -48,7 +51,7 @@ const CreateEvent = () => {
   const [loading, setLoading] = useState(false);
   const [bannerPreview, setBannerPreview] = useState(null);
   const [selectedMovie, setSelectedMovie] = useState(null);
-  const [manualMode, setManualMode] = useState(false); // New state for manual override
+  const [manualMode, setManualMode] = useState(false);
 
   const form = useForm({
     resolver: zodResolver(eventSchema),
@@ -63,8 +66,6 @@ const CreateEvent = () => {
 
   const category = form.watch('category');
   const hasTmdbId = !!form.watch('tmdbId');
-  
-  // Logic: Fields are only disabled if it's an auto-sync category AND we found a match AND manual mode is OFF
   const isLocked = (category === 'movie' || category === 'concert') && hasTmdbId && !manualMode;
 
   const handleImageChange = (e) => {
@@ -114,12 +115,22 @@ const CreateEvent = () => {
               </h1>
               <p className="text-muted-foreground mt-1 text-sm font-medium uppercase tracking-tight">Technical Management Dashboard</p>
             </div>
-            <div className="flex gap-3">
-              <Button variant="outline" type="button" onClick={() => navigate(-1)}>Cancel</Button>
-              <Button type="submit" disabled={loading} className="px-8 font-bold uppercase tracking-widest shadow-lg shadow-primary/20">
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            <div className="flex items-center gap-3">
+              <Button variant="ghost" type="button" onClick={() => navigate(-1)}>Cancel</Button>
+              
+              {/* Magic UI Rainbow Button Integration */}
+              <RainbowButton 
+                type="submit" 
+                disabled={loading}
+                className="h-11 px-8 font-bold uppercase tracking-widest text-xs"
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
                 Publish Event
-              </Button>
+              </RainbowButton>
             </div>
           </div>
 
@@ -222,7 +233,6 @@ const CreateEvent = () => {
                 </CardHeader>
                 <CardContent className="space-y-6 relative">
                   
-                  {/* Visual Indicator for Sync */}
                   <AnimatePresence>
                     {isLocked && (
                       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/5 backdrop-blur-[1px] rounded-lg">
@@ -276,7 +286,6 @@ const CreateEvent = () => {
               </Card>
             </div>
 
-            {/* Right Column */}
             <div className="space-y-6">
               <Card className="shadow-sm border-muted/60">
                 <CardHeader className="border-b mb-4">
@@ -300,7 +309,6 @@ const CreateEvent = () => {
                     )}
                     <input id="bannerImage" type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
                   </div>
-                  {isLocked && <p className="text-[9px] text-center mt-3 text-primary font-bold uppercase tracking-widest">Backdrop fetched from TMDB</p>}
                 </CardContent>
               </Card>
 

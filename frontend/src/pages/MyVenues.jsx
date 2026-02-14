@@ -29,6 +29,9 @@ import { Separator } from "@/components/ui/separator";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { toast } from "sonner";
 
+// Magic UI Integration
+import { RainbowButton } from "@/components/ui/rainbow-button";
+
 const MyVenues = () => {
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,7 +40,6 @@ const MyVenues = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
-  // Columns definition moved inside to access state triggers
   const columns = [
     {
       accessorKey: "name",
@@ -145,7 +147,7 @@ const MyVenues = () => {
   }, []);
 
   return (
-    <div className="max-w-6xl mx-auto py-10 px-6">
+    <div className="max-w-6xl mx-auto py-10 px-6 text-sans">
       <BlurFade delay={0.1} inView>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
@@ -154,9 +156,14 @@ const MyVenues = () => {
               View and manage your registered event locations.
             </p>
           </div>
-          <Button onClick={() => navigate('/createvenue')} className="h-10 px-4">
+          
+          {/* Magic UI Rainbow Button */}
+          <RainbowButton 
+            onClick={() => navigate('/createvenue')} 
+            className="h-11 px-6 text-sm font-semibold transition-all shadow-lg"
+          >
             <Plus className="mr-2 h-4 w-4" /> Add New Venue
-          </Button>
+          </RainbowButton>
         </div>
       </BlurFade>
 
@@ -179,17 +186,17 @@ const MyVenues = () => {
         <DrawerContent>
           <div className="mx-auto w-full max-w-sm">
             <DrawerHeader>
-              <DrawerTitle className="text-destructive flex items-center gap-2">
+              <DrawerTitle className="text-destructive flex items-center gap-2 font-bold">
                 <Trash2 className="h-5 w-5" /> Delete Venue?
               </DrawerTitle>
-              <DrawerDescription>
+              <DrawerDescription className="text-sm font-medium">
                 This action cannot be undone. All event data associated with this venue will be affected.
               </DrawerDescription>
             </DrawerHeader>
             <DrawerFooter className="flex-row gap-3 pb-10">
               <Button 
                 variant="destructive" 
-                className="flex-1"
+                className="flex-1 font-semibold"
                 onClick={handleDelete}
                 disabled={isDeleting}
               >
@@ -197,7 +204,7 @@ const MyVenues = () => {
                 {isDeleting ? "Deleting..." : "Confirm Delete"}
               </Button>
               <DrawerClose asChild>
-                <Button variant="outline" className="flex-1">Cancel</Button>
+                <Button variant="outline" className="flex-1 font-semibold">Cancel</Button>
               </DrawerClose>
             </DrawerFooter>
           </div>

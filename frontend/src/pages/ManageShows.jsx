@@ -25,7 +25,13 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MoreHorizontal, Plus, Trash2, Edit2, MapPin, Loader2, AlertTriangle, Calendar } from "lucide-react";
+import { 
+  MoreHorizontal, Plus, Trash2, Edit2, MapPin, 
+  Loader2, AlertTriangle, Calendar, Layers, DollarSign 
+} from "lucide-react";
+
+// Magic UI Integration
+import { RainbowButton } from "@/components/ui/rainbow-button";
 
 const EventShowsManager = () => {
   const [events, setEvents] = useState([]);
@@ -34,12 +40,10 @@ const EventShowsManager = () => {
   const [loading, setLoading] = useState(true);
   const [isSubmitLoading, setIsSubmitLoading] = useState(false);
   
-  // Dialog/Drawer States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editShow, setEditShow] = useState(null);
   const [showToDelete, setShowToDelete] = useState(null);
   
-  // New Show Form State
   const [newShow, setNewShow] = useState({
     event: '', venue: '', startTime: '', endTime: '', availability: []
   });
@@ -128,73 +132,104 @@ const EventShowsManager = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-8">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Show Management</h1>
-          <p className="text-muted-foreground">Schedule and manage showtimes for your events.</p>
+          <p className="text-muted-foreground mt-1">Schedule and manage showtimes for your events.</p>
         </div>
 
-        {/* --- CREATE SHOW DIALOG --- */}
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
-            <Button><Plus className="mr-2 h-4 w-4" /> Schedule Show</Button>
+            {/* --- Updated Trigger Button --- */}
+            <RainbowButton className="h-11 px-6 text-sm font-semibold transition-all shadow-lg">
+              <Plus className="mr-2 h-4 w-4" /> Schedule Show
+            </RainbowButton>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
-            <DialogHeader><DialogTitle>Schedule New Show</DialogTitle></DialogHeader>
-            <form onSubmit={handleCreateSubmit} className="space-y-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" /> Schedule New Show
+              </DialogTitle>
+            </DialogHeader>
+            
+            <form onSubmit={handleCreateSubmit} className="space-y-6 py-4">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Select Event</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Event</Label>
                   <Select onValueChange={(val) => setNewShow({...newShow, event: val})}>
-                    <SelectTrigger><SelectValue placeholder="Choose Event" /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="Select Event" /></SelectTrigger>
                     <SelectContent>{events.map(e => <SelectItem key={e._id} value={e._id}>{e.title}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Select Venue</Label>
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Venue</Label>
                   <Select onValueChange={handleVenueSelect}>
-                    <SelectTrigger><SelectValue placeholder="Choose Venue" /></SelectTrigger>
+                    <SelectTrigger className="h-11"><SelectValue placeholder="Select Venue" /></SelectTrigger>
                     <SelectContent>{venues.map(v => <SelectItem key={v._id} value={v._id}>{v.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <Label>Start Time</Label>
-                  <Input type="datetime-local" required onChange={(e) => setNewShow({...newShow, startTime: e.target.value})} />
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Start Time</Label>
+                  <Input type="datetime-local" className="h-11" required onChange={(e) => setNewShow({...newShow, startTime: e.target.value})} />
                 </div>
                 <div className="space-y-2">
-                  <Label>End Time (Optional)</Label>
-                  <Input type="datetime-local" onChange={(e) => setNewShow({...newShow, endTime: e.target.value})} />
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">End Time</Label>
+                  <Input type="datetime-local" className="h-11" onChange={(e) => setNewShow({...newShow, endTime: e.target.value})} />
                 </div>
               </div>
+
               {newShow.availability.length > 0 && (
-                <div className="space-y-3 pt-2">
-                  <Label className="text-sm font-semibold uppercase text-muted-foreground">Section Pricing</Label>
-                  {newShow.availability.map((section, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-3 border rounded-lg bg-muted/30">
-                      <div className="text-sm">
-                        <p className="font-medium">{section.sectionName}</p>
-                        <p className="text-xs text-muted-foreground">Capacity: {section.totalSeats}</p>
+                <div className="space-y-4 rounded-xl border bg-muted/20 p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Layers className="w-4 h-4 text-primary" />
+                    <Label className="text-xs font-bold uppercase">Pricing per Section</Label>
+                  </div>
+                  <div className="grid gap-3">
+                    {newShow.availability.map((section, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-3 border bg-card rounded-lg shadow-sm">
+                        <div>
+                          <p className="text-sm font-medium">{section.sectionName}</p>
+                          <p className="text-[11px] text-muted-foreground">Capacity: {section.totalSeats}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="relative">
+                            <DollarSign className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+                            <Input 
+                              type="number" 
+                              className="w-28 h-9 pl-8 font-medium" 
+                              placeholder="Price" 
+                              required
+                              onChange={(e) => {
+                                const updated = [...newShow.availability];
+                                updated[idx].price = Number(e.target.value);
+                                setNewShow({...newShow, availability: updated});
+                              }}
+                            />
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium">$</span>
-                        <Input type="number" className="w-24 h-8 bg-background" placeholder="Price" required
-                          onChange={(e) => {
-                            const updated = [...newShow.availability];
-                            updated[idx].price = Number(e.target.value);
-                            setNewShow({...newShow, availability: updated});
-                          }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               )}
+
               <DialogFooter>
-                <Button type="submit" className="w-full" disabled={isSubmitLoading}>
-                  {isSubmitLoading ? <Loader2 className="animate-spin mr-2" /> : <Calendar className="mr-2 h-4 w-4" />} Confirm Schedule
-                </Button>
+                {/* Internal Submit Button */}
+                <RainbowButton 
+                  type="submit" 
+                  disabled={isSubmitLoading} 
+                  className="w-full h-11 font-semibold uppercase tracking-wider text-xs"
+                >
+                  {isSubmitLoading ? (
+                    <Loader2 className="animate-spin mr-2 h-4 w-4" />
+                  ) : (
+                    <Calendar className="mr-2 h-4 w-4" />
+                  )}
+                  Confirm Schedule
+                </RainbowButton>
               </DialogFooter>
             </form>
           </DialogContent>
@@ -205,47 +240,78 @@ const EventShowsManager = () => {
         {events.map((event) => {
           const eventShows = shows.filter(s => s.event?._id === event._id || s.event === event._id);
           return (
-            <AccordionItem key={event._id} value={event._id} className="border rounded-xl px-4 bg-card shadow-sm overflow-hidden">
+            <AccordionItem key={event._id} value={event._id} className="border rounded-xl px-5 bg-card shadow-sm overflow-hidden">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-6 text-left">
-                  <img src={event.posterImage || "/api/placeholder/48/72"} alt="" className="w-12 h-18 object-cover rounded-md bg-muted" />
+                  <img src={event.posterImage || "/api/placeholder/48/72"} alt="" className="w-12 h-18 object-cover rounded-md bg-muted border shadow-sm" />
                   <div>
-                    <h3 className="font-bold text-lg leading-none mb-1">{event.title}</h3>
-                    <Badge variant="outline" className="capitalize">{event.category}</Badge>
+                    <h3 className="font-bold text-lg leading-tight">{event.title}</h3>
+                    <div className="flex gap-2 mt-1.5">
+                      <Badge variant="outline" className="capitalize text-[10px]">{event.category}</Badge>
+                      <Badge variant="secondary" className="text-[10px] font-medium">{eventShows.length} Shows</Badge>
+                    </div>
                   </div>
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-6">
-                <Table>
-                  <TableHeader className="bg-muted/50">
-                    <TableRow>
-                      <TableHead>Date & Time</TableHead>
-                      <TableHead>Venue</TableHead>
-                      <TableHead>Available Seats</TableHead>
-                      <TableHead className="w-[80px]"></TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {eventShows.map((show) => (
-                      <TableRow key={show._id}>
-                        <TableCell className="font-medium">{format(new Date(show.startTime), "PPP p")}</TableCell>
-                        <TableCell><div className="flex items-center gap-2 text-sm"><MapPin className="h-3.5 w-3.5" />{show.venue?.name}</div></TableCell>
-                        <TableCell>{show.availability.reduce((acc, curr) => acc + curr.availableSeats, 0)}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuItem onClick={() => setEditShow(show)}><Edit2 className="mr-2 h-4 w-4" /> Edit Time</DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem className="text-destructive font-medium" onClick={() => setShowToDelete(show)}><Trash2 className="mr-2 h-4 w-4" /> Delete Show</DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
+                <div className="rounded-lg border overflow-hidden">
+                  <Table>
+                    <TableHeader className="bg-muted/40">
+                      <TableRow>
+                        <TableHead className="text-[11px] uppercase font-semibold">Date & Time</TableHead>
+                        <TableHead className="text-[11px] uppercase font-semibold">Venue</TableHead>
+                        <TableHead className="text-[11px] uppercase font-semibold">Availability</TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {eventShows.length > 0 ? (
+                        eventShows.map((show) => (
+                          <TableRow key={show._id}>
+                            <TableCell className="font-medium">
+                              {format(new Date(show.startTime), "PPP")}
+                              <span className="text-muted-foreground block text-xs mt-0.5">{format(new Date(show.startTime), "p")}</span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2 text-sm">
+                                <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                                {show.venue?.name}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="font-mono text-xs">
+                                {show.availability.reduce((acc, curr) => acc + curr.availableSeats, 0)} Seats
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel className="text-xs">Management</DropdownMenuLabel>
+                                  <DropdownMenuItem onClick={() => setEditShow(show)}>
+                                    <Edit2 className="mr-2 h-4 w-4" /> Edit Time
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem className="text-destructive font-medium" onClick={() => setShowToDelete(show)}>
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Show
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={4} className="h-20 text-center text-muted-foreground text-sm">
+                            No shows currently scheduled.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
               </AccordionContent>
             </AccordionItem>
           );
@@ -263,7 +329,7 @@ const EventShowsManager = () => {
                 <Input id="start" type="datetime-local" value={new Date(editShow.startTime).toISOString().slice(0, 16)} 
                   onChange={(e) => setEditShow({...editShow, startTime: e.target.value})} required />
               </div>
-              <DialogFooter><Button type="submit" disabled={isSubmitLoading}>Save Changes</Button></DialogFooter>
+              <DialogFooter><Button type="submit" disabled={isSubmitLoading} className="w-full">Save Changes</Button></DialogFooter>
             </form>
           )}
         </DialogContent>
@@ -273,14 +339,16 @@ const EventShowsManager = () => {
       <Drawer open={!!showToDelete} onOpenChange={() => setShowToDelete(null)}>
         <DrawerContent>
           <div className="mx-auto w-full max-w-sm">
-            <DrawerHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10"><AlertTriangle className="h-6 w-6 text-destructive" /></div>
-              <DrawerTitle>Are you absolutely sure?</DrawerTitle>
-              <DrawerDescription>This action cannot be undone. This will permanently cancel the show.</DrawerDescription>
+            <DrawerHeader className="text-center pt-6">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/10">
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+              </div>
+              <DrawerTitle>Cancel Show?</DrawerTitle>
+              <DrawerDescription>This will permanently remove this showtime and prevent further bookings.</DrawerDescription>
             </DrawerHeader>
-            <DrawerFooter>
-              <Button variant="destructive" onClick={handleDelete} disabled={isSubmitLoading}>Yes, Delete Show</Button>
-              <DrawerClose asChild><Button variant="outline">Cancel</Button></DrawerClose>
+            <DrawerFooter className="pb-8">
+              <Button variant="destructive" size="lg" onClick={handleDelete} disabled={isSubmitLoading}>Confirm Deletion</Button>
+              <DrawerClose asChild><Button variant="outline" size="lg">Cancel</Button></DrawerClose>
             </DrawerFooter>
           </div>
         </DrawerContent>

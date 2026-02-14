@@ -19,6 +19,9 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { BlurFade } from "@/components/ui/blur-fade";
 
+// Magic UI Component
+import { RainbowButton } from "@/components/ui/rainbow-button";
+
 const STEPS = [
   { id: 1, name: 'Identity', icon: Building2, desc: 'Venue details' },
   { id: 2, name: 'Layout', icon: LayoutTemplate, desc: 'Seating plan' },
@@ -289,10 +292,19 @@ const EditVenue = () => {
                   Continue
                 </Button>
                ) : (
-                <Button form="edit-venue-form" type="submit" disabled={loading} className="h-9 px-8 font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20">
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                <RainbowButton 
+                  form="edit-venue-form" 
+                  type="submit" 
+                  disabled={loading} 
+                  className="h-9 px-8 font-bold text-xs uppercase tracking-widest"
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
                   Update Venue
-                </Button>
+                </RainbowButton>
                )}
             </div>
           </CardFooter>

@@ -29,6 +29,9 @@ import { Separator } from "@/components/ui/separator";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { toast } from "sonner";
 
+// Magic UI Integration
+import { RainbowButton } from "@/components/ui/rainbow-button";
+
 const MyEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,7 +91,7 @@ const MyEvents = () => {
               <DropdownMenuItem onClick={() => navigate(`/editevent/${event._id}`)}>
                 <Edit className="mr-2 h-4 w-4" /> Edit Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => navigate(`/manage-shows/${event._id}`)}>
+              <DropdownMenuItem onClick={() => navigate(`/manageshows`)}>
                 <Calendar className="mr-2 h-4 w-4" /> Manage Shows
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -144,12 +147,17 @@ const MyEvents = () => {
       <BlurFade delay={0.1}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">My Events</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">My Events</h1>
             <p className="text-muted-foreground mt-1">Create and manage your event listings and categories.</p>
           </div>
-          <Button onClick={() => navigate('/create-event')} className="h-10">
+          
+          {/* Magic UI Rainbow Button */}
+          <RainbowButton 
+            onClick={() => navigate('/createevent')} 
+            className="h-11 px-6 text-sm font-semibold transition-all shadow-lg"
+          >
             <Plus className="mr-2 h-4 w-4" /> Create Event
-          </Button>
+          </RainbowButton>
         </div>
       </BlurFade>
 
@@ -169,14 +177,18 @@ const MyEvents = () => {
         <DrawerContent>
           <div className="mx-auto w-full max-w-sm pb-10">
             <DrawerHeader>
-              <DrawerTitle className="text-destructive">Delete Event?</DrawerTitle>
-              <DrawerDescription>This will permanently remove the event. You cannot delete events that have active shows with bookings.</DrawerDescription>
+              <DrawerTitle className="text-destructive font-bold">Delete Event?</DrawerTitle>
+              <DrawerDescription>
+                This will permanently remove the event. You cannot delete events that have active shows with bookings.
+              </DrawerDescription>
             </DrawerHeader>
             <DrawerFooter className="flex-row gap-3">
-              <Button variant="destructive" className="flex-1" onClick={handleDelete} disabled={isDeleting}>
-                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm"}
+              <Button variant="destructive" className="flex-1 font-semibold" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Confirm Delete"}
               </Button>
-              <DrawerClose asChild><Button variant="outline" className="flex-1">Cancel</Button></DrawerClose>
+              <DrawerClose asChild>
+                <Button variant="outline" className="flex-1 font-semibold">Cancel</Button>
+              </DrawerClose>
             </DrawerFooter>
           </div>
         </DrawerContent>
