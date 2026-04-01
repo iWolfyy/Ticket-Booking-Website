@@ -24,6 +24,7 @@ const CreateEvent = lazy(() => import('./pages/CreateEvent'));
 const MyEvents = lazy(() => import('./pages/MyEvents'));
 const EditEvent = lazy(() => import('./pages/EditEvent'));
 const ManageShows = lazy(() => import('./pages/ManageShows'));
+const MyBookings = lazy(() => import('./pages/MyBookings'));
 
 const PageLoader = () => (
   <div className="h-screen w-full flex items-center justify-center bg-background">
@@ -53,6 +54,7 @@ const App = () => {
               <Route element={<ProtectedRoute allowedRoles={['user', 'venuemanager', 'admin', 'seller']} />}>
                 <Route path="/booking/:id" element={<SeatBooking />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/mybookings" element={<MyBookings />} />
               </Route>
 
               {/* --- VENUE MANAGER & ADMIN ONLY --- */}

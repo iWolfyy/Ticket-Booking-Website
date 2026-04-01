@@ -1,27 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { 
-  LucideStar, LucideMapPin, LucideInfo, LucideArrowLeft, 
-  LucideChevronRight, LucideClapperboard, LucideUser, LucideFilm,
+import {
+  LucideStar, LucideMapPin, LucideInfo, LucideArrowLeft,
+  LucideClapperboard, LucideUser,
   LucideClock, LucideBanknote, LucideCalendar, LucideBuilding2, LucideGlobe
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { BlurFade } from "@/components/ui/blur-fade";
-import { RainbowButton } from "@/components/ui/rainbow-button";
-import { cn } from "@/lib/utils";
 import { eventService } from "@/services/eventService";
+import ShowSchedulePicker from "@/components/ShowSchedulePicker";
 
 
 
 export default function MovieDetail() {
   const { id } = useParams();
-  
-  const [selectedVenue, setSelectedVenue] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(null);
-
 
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -44,13 +38,6 @@ export default function MovieDetail() {
 
   if (loading) return <div className="p-20 text-center font-black italic uppercase">Loading...</div>;
   if (error || !event) return <div className="p-20 text-center font-black italic uppercase">Movie Not Found</div>;
-
-  const venues = [
-    { id: "v1", name: "PVR Cinemas", city: "Colombo" },
-    { id: "v2", name: "Scope Cinemas", city: "Colombo" }
-  ];
-
-  const dates = [{ id: "d1", day: "FRI", date: "30", month: "JAN" }, { id: "d2", day: "SAT", date: "31", month: "JAN" }];
 
   const formatUSD = (val) => val ? `$${(val / 1000000).toFixed(1)}M` : "N/A";
 
@@ -182,51 +169,11 @@ export default function MovieDetail() {
         {/* BOOKING SIDEBAR */}
         <div className="relative">
           <BlurFade delay={0.6}>
-            <Card className="border-border bg-card shadow-2xl sticky top-24 overflow-hidden rounded-[2.5rem]">
-              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-primary via-purple-500 to-primary animate-pulse" />
-              <CardContent className="p-10 space-y-10">
-                <div className="space-y-6">
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">1. Select Venue</p>
-                  <div className="space-y-2">
-                    {venues.map((v) => (
-                      <button key={v.id} onClick={() => { setSelectedVenue(v.id); setSelectedDate(null); }}
-                        className={cn("w-full flex items-center justify-between p-4 rounded-2xl border text-left transition-all",
-                          selectedVenue === v.id ? "border-primary bg-primary/10 ring-1 ring-primary shadow-lg" : "border-border bg-background hover:bg-accent"
-                        )}>
-                        <div><p className={cn("text-xs font-black italic uppercase", selectedVenue === v.id ? "text-primary" : "text-foreground")}>{v.name}</p><p className="text-[10px] opacity-60 uppercase font-bold">{v.city}</p></div>
-                        {selectedVenue === v.id && <LucideChevronRight className="w-4 h-4 text-primary" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className={cn("space-y-6 transition-all duration-500", !selectedVenue && "opacity-30 pointer-events-none translate-y-2")}>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-primary italic">2. Select Date</p>
-                  <div className="flex gap-2">
-                    {dates.map((d) => (
-                      <button key={d.id} onClick={() => setSelectedDate(d.id)}
-                        className={cn("flex flex-col items-center justify-center flex-1 h-20 rounded-2xl border transition-all",
-                          selectedDate === d.id ? "border-primary bg-primary/10 text-primary ring-1 ring-primary shadow-lg" : "border-border bg-background hover:bg-accent"
-                        )}>
-                        <span className="text-[8px] font-black opacity-60 uppercase">{d.day}</span>
-                        <span className="text-xl font-black">{d.date}</span>
-                        <span className="text-[8px] font-black opacity-60 uppercase">{d.month}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="pt-6 border-t border-border space-y-4">
-                  <div className="flex justify-between items-end">
-                    <p className="text-xs font-bold opacity-40 italic uppercase tracking-[0.2em]">General Admission</p>
-                    <p className="text-3xl font-black italic tracking-tighter">LKR {event.basePrice?.toLocaleString()}</p>
-                  </div>
-                  <RainbowButton disabled={!selectedDate} className={cn("w-full h-16 text-md font-black uppercase italic tracking-[0.2em]", !selectedDate && "opacity-50 grayscale")}>
-                    Confirm Booking
-                  </RainbowButton>
-                </div>
-              </CardContent>
-            </Card>
+            <ShowSchedulePicker
+              eventId={id}
+              basePrice={event.basePrice}
+              category="movie"
+            />
           </BlurFade>
         </div>
       </div>

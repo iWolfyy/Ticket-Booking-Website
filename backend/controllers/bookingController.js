@@ -17,7 +17,47 @@ exports.createBooking = async (req, res) => {
         const show = await Show.findById(showId).session(session);
         if (!show) throw new Error('Show not found');
 
-        // [Your Seat Availability Logic here]
+        if (show.status === 'cancelled') throw new Error('This show has been cancelled');
+        if (show.status === 'sold-out') throw new Error('This show is sold out');
+
+        // Two-pass design: validate every seat before any mutations so the
+        // transaction rolls back cleanly if any single seat is already taken.
+        const sectionMap = new Map(show.availability.map(s => [s.sectionName, s]));
+
+        const seatsBySection = seats.reduce((acc, { section, seatNumber }) => {
+            (acc[section] ??= []).push(seatNumber);
+            return acc;
+        }, {});
+
+        for (const [sectionName, requestedSeats] of Object.entries(seatsBySection)) {
+            const section = sectionMap.get(sectionName);
+            if (!section) throw new Error(`Section "${sectionName}" not found in this show`);
+
+            if (section.availableSeats < requestedSeats.length) {
+                throw new Error(
+                    `Not enough seats in "${sectionName}". ` +
+                    `Requested ${requestedSeats.length}, only ${section.availableSeats} remaining.`
+                );
+            }
+
+            const bookedSet = new Set(section.bookedSeats);
+            for (const seatId of requestedSeats.filter(s => s !== 'GA')) {
+                if (bookedSet.has(seatId)) {
+                    throw new Error(`Seat ${seatId} in "${sectionName}" has already been booked`);
+                }
+            }
+        }
+
+        for (const [sectionName, requestedSeats] of Object.entries(seatsBySection)) {
+            const section = sectionMap.get(sectionName);
+            for (const seatId of requestedSeats) {
+                if (seatId !== 'GA') section.bookedSeats.push(seatId);
+                section.availableSeats -= 1;
+            }
+        }
+
+        const totalRemaining = show.availability.reduce((sum, s) => sum + s.availableSeats, 0);
+        if (totalRemaining === 0) show.status = 'sold-out';
 
         await show.save({ session });
 
